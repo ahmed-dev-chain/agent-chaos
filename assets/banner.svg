@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-label="agent-chaos: chaos engineering for AI agents">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101C3C"/><stop offset="1" stop-color="#070B18"/></linearGradient>
+ <radialGradient id="glow" cx=".82" cy=".5" r=".6"><stop offset="0" stop-color="#FF6B3D" stop-opacity=".28"/><stop offset="1" stop-color="#FF6B3D" stop-opacity="0"/></radialGradient>
+ <radialGradient id="glow2" cx=".1" cy=".1" r=".5"><stop offset="0" stop-color="#2DD4BF" stop-opacity=".18"/><stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#FFFFFF" stroke-opacity=".045"/></pattern>
+ <linearGradient id="bolt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB347"/><stop offset="1" stop-color="#FF4D2E"/></linearGradient>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22345F"/><stop offset="1" stop-color="#0B1226"/></linearGradient>
+</defs>
+<rect width="1280" height="320" rx="18" fill="url(#g)"/><rect width="1280" height="320" rx="18" fill="url(#grid)"/>
+<rect width="1280" height="320" rx="18" fill="url(#glow)"/><rect width="1280" height="320" rx="18" fill="url(#glow2)"/>
+<g transform="translate(64 80) scale(1.35)">
+<rect width="128" height="128" rx="30" fill="url(#bg)"/>
+<rect x="1.5" y="1.5" width="125" height="125" rx="28.5" fill="none" stroke="#FFFFFF" stroke-opacity=".12" stroke-width="3"/>
+<path d="M30 88 L98 88" stroke="#3B4A75" stroke-width="3" stroke-dasharray="3 6" stroke-linecap="round"/>
+<path d="M30 88 L62 40" stroke="#2DD4BF" stroke-width="6" stroke-linecap="round"/>
+<path d="M62 40 L77 55 L68 62 L84 76 L98 88" fill="none" stroke="url(#bolt)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="30" cy="88" r="10" fill="#0B1226" stroke="#2DD4BF" stroke-width="5"/>
+<circle cx="62" cy="40" r="11" fill="#0B1226" stroke="#FFFFFF" stroke-width="5"/>
+<circle cx="98" cy="88" r="10" fill="#0B1226" stroke="#FF6B3D" stroke-width="5"/>
+</g>
+<text x="270" y="152" font-family="Inter,'Segoe UI',Helvetica,Arial,sans-serif" font-size="88" font-weight="800" fill="#FFFFFF" letter-spacing="-2">agent<tspan fill="#FF6B3D">-</tspan>chaos</text>
+<text x="272" y="203" font-family="Inter,'Segoe UI',Helvetica,Arial,sans-serif" font-size="32" font-weight="500" fill="#C9D3EE">Chaos engineering for AI agents</text>
+<text x="272" y="246" font-family="Inter,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" fill="#8A94AD">Break tools, models and context on purpose. Measure what survives.</text>
+<g transform="translate(985 48) scale(.82)" opacity=".95">
+ <path d="M20 190 L120 190" stroke="#3B4A75" stroke-width="3" stroke-dasharray="3 8" stroke-linecap="round"/>
+ <path d="M20 190 L90 90" stroke="#2DD4BF" stroke-width="7" stroke-linecap="round"/>
+ <path d="M90 90 L150 40 L128 78 L190 66 L215 120 L196 150 L250 190 L330 130" fill="none" stroke="url(#bolt)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 0"/>
+ <circle cx="20" cy="190" r="13" fill="#0B1226" stroke="#2DD4BF" stroke-width="6"/>
+ <circle cx="90" cy="90" r="14" fill="#0B1226" stroke="#FFFFFF" stroke-width="6"/>
+ <circle cx="330" cy="130" r="12" fill="#0B1226" stroke="#FF6B3D" stroke-width="6"/>
+ <circle cx="250" cy="190" r="9" fill="#0B1226" stroke="#FF6B3D" stroke-width="5"/>
+ <circle cx="150" cy="40" r="9" fill="#0B1226" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="5"/>
+</g>
+</svg>

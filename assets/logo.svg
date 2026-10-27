@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="agent-chaos logo">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22345F"/><stop offset="1" stop-color="#0B1226"/></linearGradient>
+ <linearGradient id="bolt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB347"/><stop offset="1" stop-color="#FF4D2E"/></linearGradient>
+</defs>
+<rect width="128" height="128" rx="30" fill="url(#bg)"/>
+<rect x="1.5" y="1.5" width="125" height="125" rx="28.5" fill="none" stroke="#FFFFFF" stroke-opacity=".12" stroke-width="3"/>
+<path d="M30 88 L98 88" stroke="#3B4A75" stroke-width="3" stroke-dasharray="3 6" stroke-linecap="round"/>
+<path d="M30 88 L62 40" stroke="#2DD4BF" stroke-width="6" stroke-linecap="round"/>
+<path d="M62 40 L77 55 L68 62 L84 76 L98 88" fill="none" stroke="url(#bolt)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="30" cy="88" r="10" fill="#0B1226" stroke="#2DD4BF" stroke-width="5"/>
+<circle cx="62" cy="40" r="11" fill="#0B1226" stroke="#FFFFFF" stroke-width="5"/>
+<circle cx="98" cy="88" r="10" fill="#0B1226" stroke="#FF6B3D" stroke-width="5"/>
+</svg>
