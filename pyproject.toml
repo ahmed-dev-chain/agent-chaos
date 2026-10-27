@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-chaos"
+version = "0.1.0"
+description = "Chaos engineering for AI agents: break tools, models and context on purpose, then measure whether your agent survives."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Muhammad Ahmed" }]
+keywords = ["ai-agents", "chaos-engineering", "testing", "llm", "langgraph", "reliability", "prompt-injection"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Testing",
+]
+dependencies = []
+
+[project.optional-dependencies]
+httpx = ["httpx>=0.25"]
+dev = ["pytest>=7.4", "httpx>=0.25", "ruff>=0.5", "mypy>=1.8"]
+
+[project.scripts]
+chaos = "agent_chaos.cli:main"
+
+[project.entry-points.pytest11]
+agent_chaos = "agent_chaos.pytest_plugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_chaos"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B904", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_httpx_patch.py" = ["E402"]
