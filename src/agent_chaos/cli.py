@@ -1,0 +1,102 @@
+"""Command line: ``chaos run | replay | faults``."""
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import json
+import sys
+from collections.abc import Sequence
+from pathlib import Path
+
+from . import __version__
+from .faults.base import FAULTS, load_plugins
+from .report import render, write_html, write_json
+from .runner import Scenario, run_all, run_trial
+
+
+def load_scenarios(spec: str) -> list[Scenario]:
+    """``path/to/file.py`` (uses SCENARIOS) or ``path/to/file.py:ATTR``."""
+    path, _, attr = spec.partition(":")
+    attr = attr or "SCENARIOS"
+    file = Path(path).resolve()
+    if not file.exists():
+        raise SystemExit(f"chaos: file not found: {path}")
+    sys.path.insert(0, str(file.parent))
+    module_spec = importlib.util.spec_from_file_location(file.stem, file)
+    assert module_spec and module_spec.loader
+    module = importlib.util.module_from_spec(module_spec)
+    sys.modules[file.stem] = module
+    module_spec.loader.exec_module(module)
+    scenarios = getattr(module, attr, None)
+    if not scenarios:
+        raise SystemExit(f"chaos: {path} has no list named {attr}")
+    return list(scenarios)
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    scenarios = load_scenarios(args.target)
+    summary = run_all(scenarios, trials=args.trials, seed=args.seed, min_score=args.min_score)
+    print(render(summary, args.target))
+    if args.html:
+        print("HTML report:", write_html(summary, args.html))
+    if args.json:
+        write_json(summary, args.json)
+    return 0 if summary.gate_passed else 1
+
+
+def cmd_replay(args: argparse.Namespace) -> int:
+    scenarios = load_scenarios(args.target)
+    match = [s for s in scenarios if s.name == args.scenario]
+    if not match:
+        raise SystemExit(f"chaos: no scenario named {args.scenario!r}; have {[s.name for s in scenarios]}")
+    if args.seed is not None:
+        match[0].seed = args.seed
+    result = run_trial(match[0], args.trial)
+    print(f"scenario={result.scenario} trial={result.trial} seed={result.seed}")
+    print(f"verdict: {result.verdict.level.value}  {result.verdict.reason}")
+    print("trace:")
+    for e in result.trace:
+        faults = f"  <- {','.join(e['faults'])}" if e["faults"] else ""
+        err = f"  !! {e['error']}" if e["error"] else ""
+        print(f"  {e['id']:>2}. {e['name']}({json.dumps(e['args'])}){faults}{err}")
+    return 0
+
+
+def cmd_faults(_: argparse.Namespace) -> int:
+    load_plugins()
+    for name, cls in sorted(FAULTS.items()):
+        doc = (cls.__doc__ or "").strip().splitlines()[0] if cls.__doc__ else ""
+        print(f"{name:<22} [{cls.category}] {doc}")
+    return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="chaos", description="Chaos engineering for AI agents")
+    parser.add_argument("--version", action="version", version=f"agent-chaos {__version__}")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    run = sub.add_parser("run", help="run scenarios and print a resilience report")
+    run.add_argument("target", help="file.py or file.py:ATTR holding a list of Scenario objects")
+    run.add_argument("--trials", type=int, default=None, help="override trials per scenario")
+    run.add_argument("--seed", type=int, default=None, help="override base seed")
+    run.add_argument("--min-score", type=float, default=0.0, help="fail the gate below this score")
+    run.add_argument("--html", metavar="DIR", help="write an HTML report to DIR")
+    run.add_argument("--json", metavar="FILE", help="write a JSON report to FILE")
+    run.set_defaults(func=cmd_run)
+
+    rep = sub.add_parser("replay", help="re-run one trial exactly and print its trace")
+    rep.add_argument("target")
+    rep.add_argument("--scenario", required=True)
+    rep.add_argument("--trial", type=int, required=True)
+    rep.add_argument("--seed", type=int, default=None)
+    rep.set_defaults(func=cmd_replay)
+
+    fl = sub.add_parser("faults", help="list available faults")
+    fl.set_defaults(func=cmd_faults)
+
+    args = parser.parse_args(argv)
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
