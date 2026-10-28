@@ -215,6 +215,16 @@ replay_scenario = Scenario(
   with: { name: chaos-report, path: chaos-report }
 ```
 
+Catch regressions per scenario, not just an overall score threshold, with a committed baseline file:
+
+```bash
+chaos run my_scenarios.py --baseline chaos-baseline.json --update-baseline   # after an intentional change
+chaos run my_scenarios.py --baseline chaos-baseline.json                     # in CI: fails if any scenario regressed
+```
+
+`--sarif`/`--junit` write the same run to formats other CI tooling already consumes (GitHub code
+scanning, JUnit-reading dashboards).
+
 ## Why not just use evals, tracing or red-teaming?
 
 | | Measures | Misses |
@@ -241,6 +251,7 @@ replay_scenario = Scenario(
 - [x] `chaos shrink`: reduce a failing trial's faults to the smallest set that still reproduces it
 - [x] Written stability policy (`docs/STABILITY.md`)
 - [x] Pluggable `llm_judge` oracle, SARIF and JUnit XML reports for CI consumers
+- [x] File-based baselines (`--baseline`/`--update-baseline`) to gate on per-scenario regressions
 - [ ] Transparent proxy for any language, including MCP
 - [ ] GitHub Action with PR score diffs
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent

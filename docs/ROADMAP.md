@@ -20,7 +20,7 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 - [x] SARIF and JUnit XML output
 - [x] Failure shrinking: `chaos shrink` reduces a failing trial's faults to the smallest reproducing set
 - [ ] GitHub Action with PR comment and score diff
-- [ ] Baselines and trend tracking
+- [x] Baselines (file-based, `--baseline`/`--update-baseline`) -- "trend tracking" (history over time) not done
 - [x] Calibrated LLM-judge oracle (optional, fully pluggable -- no built-in provider)
 - [ ] Docs site and public benchmark of popular agent templates
 

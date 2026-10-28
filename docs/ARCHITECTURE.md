@@ -23,6 +23,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | `chaos init` framework detection and scenario scaffold | `scaffold.py` |
 | Record and replay (`ReplayFault`, `save_trace`, `load_replay`) | `record.py` |
 | Failure shrinking (`shrink`) | `shrink.py` |
+| File-based baselines (`save_baseline`, `compare_baseline`) | `baseline.py` |
 | CLI (`run`, `replay`, `record`, `shrink`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
 
 ## Control flow of one trial
@@ -42,7 +43,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 
 ## Not built yet
 
-Transparent proxy mode, baselines, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
+Transparent proxy mode, trend tracking over time, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
@@ -73,6 +74,10 @@ Transparent proxy mode, baselines, GitHub Action wrapper, sweeps. See `ROADMAP.m
   so its result is always a genuine reproduction. It isn't guaranteed globally minimal, because
   `Policy.should_fire` draws from `ctx.rng` for every fault in the list on every event (not just
   the ones that end up firing), so removing one fault shifts the draws the rest consume.
+- `baseline.py` has no history: `save_baseline` always overwrites the one baseline file with the
+  latest run, and `compare_baseline` only sees that single snapshot. A regression is "unsafe now
+  when it wasn't in the baseline" or "pass rate dropped more than 5 points" -- there's no trend
+  over multiple runs yet.
 - `oracles/judge.py`'s `llm_judge` makes no LLM call itself -- `judge_fn(ctx, result) -> float` is
   entirely the caller's. There's no built-in position-bias control or prompt template; `calibrate`
   only reports an agreement rate against a hand-labeled set, which the caller still has to build.

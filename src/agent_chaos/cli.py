@@ -10,11 +10,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from . import __version__
+from .baseline import compare_baseline, save_baseline
 from .core.context import RunContext, _run_sync
 from .core.events import Level
 from .faults.base import FAULTS, load_plugins
 from .record import save_trace
-from .report import render, write_html, write_json, write_junit, write_sarif
+from .report import render, render_baseline_diff, write_html, write_json, write_junit, write_sarif
 from .runner import Scenario, run_all, run_trial
 from .scaffold import detect_framework, render_template
 from .shrink import shrink
@@ -51,6 +52,15 @@ def cmd_run(args: argparse.Namespace) -> int:
     scenarios = load_scenarios(args.target)
     summary = run_all(scenarios, trials=args.trials, seed=args.seed, min_score=args.min_score)
     print(render(summary, args.target))
+    regressed = []
+    if args.baseline:
+        if args.update_baseline:
+            save_baseline(summary, args.baseline)
+            print(f"chaos: updated baseline {args.baseline}")
+        else:
+            diffs = compare_baseline(summary, args.baseline)
+            print(render_baseline_diff(diffs))
+            regressed = [d for d in diffs if d.regressed]
     if args.html:
         print("HTML report:", write_html(summary, args.html))
     if args.json:
@@ -59,7 +69,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         write_sarif(summary, args.sarif, args.target)
     if args.junit:
         write_junit(summary, args.junit)
-    return 0 if summary.gate_passed else 1
+    return 0 if summary.gate_passed and not regressed else 1
 
 
 def _print_trial(result) -> None:  # noqa: ANN001 - TrialResult, kept loose to avoid an import cycle
@@ -149,6 +159,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--json", metavar="FILE", help="write a JSON report to FILE")
     run.add_argument("--sarif", metavar="FILE", help="write a SARIF 2.1.0 report to FILE")
     run.add_argument("--junit", metavar="FILE", help="write a JUnit XML report to FILE")
+    run.add_argument("--baseline", metavar="FILE", help="compare per-scenario pass rates against FILE")
+    run.add_argument("--update-baseline", action="store_true",
+                      help="with --baseline, write the current run as the new baseline instead of comparing")
     run.set_defaults(func=cmd_run)
 
     rep = sub.add_parser("replay", help="re-run one trial exactly and print its trace")

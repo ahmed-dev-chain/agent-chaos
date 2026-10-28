@@ -23,6 +23,7 @@ chaos faults                        # list all registered faults
 chaos init                          # detect the framework, write a starter chaos_scenarios.py
 chaos record <target> --scenario <name> --out trace.json  # capture one real, unfaulted run
 chaos shrink <target> --scenario <name> --trial <n>  # reduce a failing trial's faults to the smallest reproducing set
+chaos run <target> --baseline FILE [--update-baseline]  # compare/update per-scenario pass rates
 
 # optional, needs real API keys (copy .env.example -> .env) — not part of the test suite:
 pip install -e ".[real-sdk]" && python examples/real_sdk_check.py

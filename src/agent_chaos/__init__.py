@@ -1,5 +1,6 @@
 """agent-chaos: chaos engineering for AI agents."""
 from . import faults, oracles, policies
+from .baseline import ScoreDiff, compare_baseline, save_baseline
 from .core import (
     ChaosError,
     Event,
@@ -23,5 +24,6 @@ __all__ = [
     "StepLimitExceeded", "ToolError", "ToolTimeout", "Verdict", "RunSummary", "Scenario",
     "ScenarioResult", "TrialResult", "run_all", "run_scenario", "run_trial",
     "ReplayFault", "load_replay", "save_trace", "ReplayMismatch", "ReplayedError", "shrink",
+    "ScoreDiff", "compare_baseline", "save_baseline",
     "__version__",
 ]
