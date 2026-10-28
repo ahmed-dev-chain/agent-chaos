@@ -12,6 +12,7 @@ from . import __version__
 from .faults.base import FAULTS, load_plugins
 from .report import render, write_html, write_json
 from .runner import Scenario, run_all, run_trial
+from .scaffold import detect_framework, render_template
 
 
 def load_scenarios(spec: str) -> list[Scenario]:
@@ -78,6 +79,17 @@ def cmd_faults(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_init(args: argparse.Namespace) -> int:
+    out = Path(args.out)
+    if out.exists() and not args.force:
+        raise SystemExit(f"chaos: {out} already exists (use --force to overwrite)")
+    framework = args.framework or detect_framework()
+    out.write_text(render_template(framework, out.name))
+    print(f"chaos: wrote {out} (detected framework: {framework})")
+    print(f"       edit it, then: chaos run {out}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="chaos", description="Chaos engineering for AI agents")
     parser.add_argument("--version", action="version", version=f"agent-chaos {__version__}")
@@ -101,6 +113,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     fl = sub.add_parser("faults", help="list available faults")
     fl.set_defaults(func=cmd_faults)
+
+    init = sub.add_parser("init", help="detect the agent framework and write a starter scenario file")
+    init.add_argument("--out", default="chaos_scenarios.py", help="path to write (default: chaos_scenarios.py)")
+    init.add_argument("--framework", choices=["plain", "langchain", "langgraph"],
+                       help="skip auto-detection and use this template")
+    init.add_argument("--force", action="store_true", help="overwrite --out if it already exists")
+    init.set_defaults(func=cmd_init)
 
     args = parser.parse_args(argv)
     return args.func(args)

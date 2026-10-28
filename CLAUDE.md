@@ -20,6 +20,7 @@ chaos run examples/support_agent.py:NAIVE      # run a scenario file (fragile ag
 chaos run examples/support_agent.py:HARDENED   # run the hardened agent (expect pass)
 chaos replay examples/support_agent.py:NAIVE --scenario <name> --trial <n>  # reproduce one exact trial
 chaos faults                        # list all registered faults
+chaos init                          # detect the framework, write a starter chaos_scenarios.py
 
 # optional, needs real API keys (copy .env.example -> .env) — not part of the test suite:
 pip install -e ".[real-sdk]" && python examples/real_sdk_check.py
@@ -80,7 +81,9 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
 - **New framework adapter**: add a module under `adapters/` following `adapters/langgraph.py` —
   duck-typed, no hard dependency on the target framework. It wraps the framework's own callables
   (node functions, `tool.func`/`tool.coroutine`) via `ctx.wrap`/`ctx.awrap`; it doesn't touch
-  framework internals or require the framework installed to import agent-chaos itself.
+  framework internals or require the framework installed to import agent-chaos itself. If it adds
+  a new detectable framework, also add a template to `scaffold.py`'s `_BODIES` and wire the module
+  name into `detect_framework`'s `_FRAMEWORK_SPECS`.
 
 ### Known v0.1/v0.2 limits (don't assume otherwise)
 

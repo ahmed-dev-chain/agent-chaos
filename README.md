@@ -105,6 +105,7 @@ pip install -e ".[dev]"
 chaos run examples/support_agent.py:NAIVE       # watch a fragile agent fail
 chaos run examples/support_agent.py:HARDENED    # watch a hardened one pass
 chaos faults                                    # list every available fault
+chaos init                                      # detect your framework, write a starter scenario file
 ```
 
 ### Test your own agent
@@ -206,6 +207,7 @@ def test_agent_survives_lost_payment_reply(chaos):
 - [x] Terminal, JSON and HTML reports, pytest plugin, `httpx` interception (sync and async)
 - [x] Model and context faults (refusal, format drift, window overflow, memory corruption)
 - [x] LangGraph/LangChain adapter (node and tool wrapping, no hard dependency)
+- [x] `chaos init` to scaffold a starter scenario file for your framework
 - [ ] OpenAI Agents SDK and CrewAI adapters
 - [ ] Transparent proxy for any language, including MCP
 - [ ] Record and replay for free, deterministic CI

@@ -17,7 +17,8 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Terminal, JSON and HTML reports | `report/` |
 | SDK-level interception (httpx, sync and async) | `intercept/httpx_patch.py` |
 | LangGraph/LangChain adapter (node and tool wrapping) | `adapters/langgraph.py` |
-| CLI (`run`, `replay`, `faults`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
+| `chaos init` framework detection and scenario scaffold | `scaffold.py` |
+| CLI (`run`, `replay`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
 
 ## Control flow of one trial
 

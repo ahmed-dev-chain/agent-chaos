@@ -7,8 +7,8 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 - [x] Context faults: window overflow, memory corruption
 - [x] httpx async client patch; verify against real OpenAI/Anthropic SDK calls (`examples/real_sdk_check.py`)
 - [x] LangGraph adapter (node and tool level)
-- [ ] LangChain and OpenAI Agents SDK adapters
-- [ ] `chaos init` that detects the framework and writes a starter scenario file
+- [x] `chaos init` that detects the framework and writes a starter scenario file
+- [ ] OpenAI Agents SDK and CrewAI adapters
 
 ## v0.5: works with anything
 - [ ] Transparent proxy (HTTP, SSE streaming, MCP) for any language
