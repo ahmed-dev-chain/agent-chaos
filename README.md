@@ -239,7 +239,7 @@ replay_scenario = Scenario(
 - [ ] Failure shrinking: reduce a failing storyline to the smallest one that still breaks the agent
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 
-Details in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf).
+Details in [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf).
 
 ## Contributing
 
