@@ -104,13 +104,22 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
   the recorded response instead of running the real one — zero core changes, built entirely on the
   existing `Fault`/`RunContext` contract. It matches by `(kind, name, index)`, not call position, so
   it's safe to reuse across many trials of the same `Scenario`.
+- **Calling Claude** (`claude.py`): `call_claude(prompt, ...)` is a plain sync function — use
+  `prefer="api"`/`"cli"`/`"auto"` (default) to pick between the Anthropic SDK (`ANTHROPIC_API_KEY`)
+  and the local `claude` CLI (no key, no extra dependency, needs `claude login` already done). Since
+  it's just a callable, wrap it with `ctx.wrap("claude", call_claude, kind=Kind.MODEL_CALL)` like any
+  other tool — fault injection doesn't care which backend answered.
 
 ### Known v0.1/v0.2 limits (don't assume otherwise)
 
 - `no_duplicate_side_effect` oracle trusts that the backend honors `idempotency_key`; without one,
   duplicate detection is based on identical call arguments.
-- `examples/real_sdk_check.py` is a manual script (needs real API keys via `.env`, see
-  `.env.example`), not part of `pytest` — the core test suite stays offline and key-free by design.
+- `examples/real_sdk_check.py` is a manual script (needs real credentials — an API key via `.env`,
+  or just a logged-in `claude` CLI for the Claude check), not part of `pytest` — the core test
+  suite stays offline and key-free by design; `tests/test_claude.py` mocks `subprocess.run` instead.
+- `claude.py`'s CLI path shells out to `claude -p ... --output-format json` per call: slower than
+  the API, and subject to the CLI's own trust/permission prompts in an unfamiliar working
+  directory. It's for scripted checks and modest agent workloads, not high-throughput use.
 - Faults apply per-call; there is no multi-step storyline/composition yet (planned for v1.0).
 - New capabilities are meant to land as plugins/scenario packs, not core changes — see
   `docs/ROADMAP.md`'s stated rule, before adding core surface area.

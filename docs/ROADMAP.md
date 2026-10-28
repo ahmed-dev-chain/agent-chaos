@@ -6,6 +6,7 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 - [x] Model faults: refusal, format drift, truncation
 - [x] Context faults: window overflow, memory corruption
 - [x] httpx async client patch; verify against real OpenAI/Anthropic SDK calls (`examples/real_sdk_check.py`)
+- [x] Call Claude via API key or a Claude Code subscription (`agent_chaos.claude.call_claude`), no code change
 - [x] LangGraph adapter (node and tool level)
 - [x] `chaos init` that detects the framework and writes a starter scenario file
 - [x] OpenAI Agents SDK and CrewAI adapters

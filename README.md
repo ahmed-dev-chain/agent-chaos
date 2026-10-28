@@ -158,6 +158,23 @@ async target automatically. To confirm the patch genuinely intercepts the real O
 just a mock), copy [`.env.example`](.env.example) to `.env`, add a key, `pip install -e ".[real-sdk]"`, and
 run `python examples/real_sdk_check.py`. No key, no `.env` file: nothing in the core test suite needs either.
 
+### Calling Claude: API key or just your Claude Code subscription
+
+`agent_chaos.claude.call_claude` works either way, with no code change: set `ANTHROPIC_API_KEY` to use the
+API, or leave it unset and it falls back to the local `claude` CLI (Claude Code), authenticated by whatever
+`claude login` already set up — a Pro/Max/Team subscription, no billed key, no extra `pip install`. It's a
+plain callable either way, so it works with `ctx.wrap` like anything else:
+
+```python
+from agent_chaos.claude import call_claude
+
+ask = ctx.wrap("claude", call_claude, kind=Kind.MODEL_CALL)
+reply = ask("Summarize this ticket: ...")
+```
+
+Fault injection happens at the `ctx.wrap` boundary, not inside `call_claude`, so every fault in the catalog
+works against it identically regardless of which backend is actually answering.
+
 A LangGraph, LangChain, CrewAI or OpenAI Agents SDK agent needs no `httpx` patch at all: wrap each node
 and tool directly, with no hard dependency on any of those frameworks required by agent-chaos itself:
 
@@ -256,6 +273,7 @@ above and the automatic `GITHUB_TOKEN` -- no secret of yours required.
 - [x] File-based baselines (`--baseline`/`--update-baseline`) to gate on per-scenario regressions
 - [x] GitHub Action with PR score diffs (`.github/workflows/chaos-pr.yml`)
 - [x] Docs site skeleton (`mkdocs.yml` -- not published yet)
+- [x] Call Claude via API key or Claude Code subscription, no code change (`agent_chaos.claude.call_claude`)
 - [ ] Transparent proxy for any language, including MCP
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 

@@ -16,6 +16,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Resilience score and Wilson interval | `scoring.py` |
 | Terminal, JSON, HTML, SARIF and JUnit XML reports | `report/` |
 | SDK-level interception (httpx, sync and async) | `intercept/httpx_patch.py` |
+| Call Claude via API key or Claude Code CLI subscription | `claude.py` |
 | Shared tool wrapping (`func`/`coroutine` and `_run`/`_arun`) | `adapters/tools.py` |
 | LangGraph adapter (node wrapping) | `adapters/langgraph.py` |
 | OpenAI Agents SDK adapter (`FunctionTool.on_invoke_tool`) | `adapters/openai_agents.py` |
@@ -82,3 +83,9 @@ publishing the docs site. See `ROADMAP.md` and the blueprint PDF.
 - `oracles/judge.py`'s `llm_judge` makes no LLM call itself -- `judge_fn(ctx, result) -> float` is
   entirely the caller's. There's no built-in position-bias control or prompt template; `calibrate`
   only reports an agreement rate against a hand-labeled set, which the caller still has to build.
+- `claude.py`'s `call_claude` picks its backend by `ANTHROPIC_API_KEY` presence (or an explicit
+  `prefer=`): with a key, the Anthropic SDK (needs `pip install anthropic`); without one, the local
+  `claude` CLI via `subprocess` (zero extra dependency, needs `claude login` already done). The CLI
+  path shells out per call, so it's slower than the API and inherits whatever the CLI's own
+  permission/trust prompts require in an untrusted working directory -- it's meant for scripted
+  checks and small agents, not high-throughput use.
