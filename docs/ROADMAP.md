@@ -3,12 +3,12 @@
 Rule: new capability arrives as a plugin or scenario pack, never as a core change.
 
 ## Next (v0.2): works with real agents
+- [x] Model faults: refusal, format drift, truncation
+- [x] Context faults: window overflow, memory corruption
 - [ ] httpx async client patch; verify against real OpenAI/Anthropic SDK calls
 - [ ] LangGraph adapter (node and tool level)
 - [ ] LangChain and OpenAI Agents SDK adapters
 - [ ] `chaos init` that detects the framework and writes a starter scenario file
-- [ ] Context faults: window overflow, memory corruption
-- [ ] Model faults: refusal, format drift, truncation
 
 ## v0.5: works with anything
 - [ ] Transparent proxy (HTTP, SSE streaming, MCP) for any language

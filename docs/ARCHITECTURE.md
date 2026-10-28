@@ -9,7 +9,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Normalized event model | `core/events.py` |
 | Per-trial context: seeded RNG, virtual clock, step cap, event recording | `core/context.py` |
 | Fault base class, `where` selectors, plugin loading via entry points | `faults/base.py` |
-| Tool, model-adjacent and security faults | `faults/tool.py`, `faults/security.py` |
+| Tool, model, context and security faults | `faults/tool.py`, `faults/model.py`, `faults/context.py`, `faults/security.py` |
 | Policies | `policies.py` |
 | Oracles | `oracles/base.py` |
 | Scenario runner and gate | `runner.py` |

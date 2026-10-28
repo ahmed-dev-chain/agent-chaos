@@ -67,6 +67,26 @@ class MalformedOutput(Fault):
         return _corrupt(call(), self.mode)
 
 
+def _corrupt(value: Any, mode: str, keep: float = 0.5) -> Any:
+    # httpx.Response-like objects
+    if hasattr(value, "status_code") and hasattr(value, "content"):
+        try:
+            cut = int(len(value.content) * keep)
+            return type(value)(value.status_code, content=value.content[:cut], request=value.request)
+        except Exception:  # noqa: BLE001
+            return value
+    if isinstance(value, dict):
+        if mode == "null_values":
+            return {k: None for k in value}
+        keys = list(value)[: max(1, int(len(value) * keep))]
+        return {k: value[k] for k in keys}
+    if isinstance(value, (list, tuple)):
+        return list(value)[: max(1, int(len(value) * keep))] if value else []
+    if isinstance(value, str):
+        return value[: max(1, int(len(value) * keep))] if value else value
+    return None if mode == "null_values" else value
+
+
 @register_fault
 class PartialSuccess(Fault):
     """The side effect HAPPENS but the response is lost. Exposes unsafe retries."""
@@ -107,22 +127,3 @@ class StaleData(Fault):
     def apply(self, event: Event, ctx: RunContext, call: Callable[[], Any]) -> Any:
         call()
         return copy.deepcopy(self.value)
-
-
-def _corrupt(value: Any, mode: str) -> Any:
-    # httpx.Response-like objects
-    if hasattr(value, "status_code") and hasattr(value, "content"):
-        try:
-            return type(value)(value.status_code, content=value.content[: len(value.content) // 2], request=value.request)
-        except Exception:  # noqa: BLE001
-            return value
-    if isinstance(value, dict):
-        if mode == "null_values":
-            return {k: None for k in value}
-        keys = list(value)[: max(1, len(value) // 2)]
-        return {k: value[k] for k in keys}
-    if isinstance(value, (list, tuple)):
-        return list(value)[: len(value) // 2]
-    if isinstance(value, str):
-        return value[: len(value) // 2]
-    return None if mode == "null_values" else value

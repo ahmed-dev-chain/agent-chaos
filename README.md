@@ -69,6 +69,11 @@ Faults strike where real agents get hurt. Each one is a few lines of code and is
 | Tool | `stale_data` | Valid but outdated results | Confident wrong answers |
 | Security | `indirect_injection` | Instructions hidden in tool output, pages or files | The top real-world agent attack |
 | Security | `exfiltration_bait` | Prompts that push data to an attacker URL | Data leaks |
+| Model | `refusal` | The model refuses instead of answering | Dead ends, silent failure |
+| Model | `format_drift` | Structured output flattened into loose text | Parsers break downstream |
+| Model | `truncation` | Output cut off partway through | Half-finished tool calls |
+| Context | `window_overflow` | Older context silently falls out of the window | Lost instructions, forgotten goals |
+| Context | `memory_corruption` | An earlier entry is silently altered | State consistency |
 
 **When** a fault fires is a separate, composable policy: `Always`, `Probability(p)`, `OnCall(n)`, `FirstN(n)`.
 **How** the agent is judged is a separate set of oracles: `max_steps`, `forbidden_action`, `no_duplicate_side_effect`, `result_check`, `max_cost`, `max_latency_ms`.
@@ -76,7 +81,7 @@ Faults strike where real agents get hurt. Each one is a few lines of code and is
 <details>
 <summary><b>Coming next (see the roadmap)</b></summary>
 
-Model faults (refusal, format drift, truncation), context faults (window overflow, memory corruption), network faults (jitter, drops, DNS), a transparent proxy for any language, LangGraph and LangChain adapters, record and replay, and an adaptive adversary.
+Network faults (jitter, drops, DNS), a transparent proxy for any language, LangGraph and LangChain adapters, record and replay, and an adaptive adversary.
 
 </details>
 
@@ -183,8 +188,8 @@ def test_agent_survives_lost_payment_reply(chaos):
 - [x] Oracles for loops, forbidden actions, duplicate side effects and results
 - [x] Resilience score with Wilson confidence interval and a CI gate
 - [x] Terminal, JSON and HTML reports, pytest plugin, `httpx` interception
+- [x] Model and context faults (refusal, format drift, window overflow, memory corruption)
 - [ ] LangGraph, LangChain and OpenAI Agents SDK adapters
-- [ ] Model and context faults (refusal, format drift, window overflow)
 - [ ] Transparent proxy for any language, including MCP
 - [ ] Record and replay for free, deterministic CI
 - [ ] GitHub Action with PR score diffs
