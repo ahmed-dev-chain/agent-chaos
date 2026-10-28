@@ -11,7 +11,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Fault base class, `where` selectors, plugin loading via entry points | `faults/base.py` |
 | Tool, model, context and security faults | `faults/tool.py`, `faults/model.py`, `faults/context.py`, `faults/security.py` |
 | Policies | `policies.py` |
-| Oracles (invariants, trajectory) | `oracles/base.py`, `oracles/trajectory.py` |
+| Oracles (invariants, trajectory, pluggable LLM-judge) | `oracles/base.py`, `oracles/trajectory.py`, `oracles/judge.py` |
 | Scenario runner and gate | `runner.py` |
 | Resilience score and Wilson interval | `scoring.py` |
 | Terminal, JSON, HTML, SARIF and JUnit XML reports | `report/` |
@@ -42,7 +42,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 
 ## Not built yet
 
-Transparent proxy mode, LLM-judge oracle, baselines, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
+Transparent proxy mode, baselines, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
@@ -73,3 +73,6 @@ Transparent proxy mode, LLM-judge oracle, baselines, GitHub Action wrapper, swee
   so its result is always a genuine reproduction. It isn't guaranteed globally minimal, because
   `Policy.should_fire` draws from `ctx.rng` for every fault in the list on every event (not just
   the ones that end up firing), so removing one fault shifts the draws the rest consume.
+- `oracles/judge.py`'s `llm_judge` makes no LLM call itself -- `judge_fn(ctx, result) -> float` is
+  entirely the caller's. There's no built-in position-bias control or prompt template; `calibrate`
+  only reports an agreement rate against a hand-labeled set, which the caller still has to build.

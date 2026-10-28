@@ -80,7 +80,7 @@ Faults strike where real agents get hurt. Each one is a few lines of code and is
 | Context | `memory_corruption` | An earlier entry is silently altered | State consistency |
 
 **When** a fault fires is a separate, composable policy: `Always`, `Probability(p)`, `OnCall(n)`, `FirstN(n)`.
-**How** the agent is judged is a separate set of oracles: `max_steps`, `forbidden_action`, `no_duplicate_side_effect`, `result_check`, `max_cost`, `max_latency_ms`, plus trajectory oracles over the whole call sequence: `tool_order`, `max_retries`, `no_call_loop`.
+**How** the agent is judged is a separate set of oracles: `max_steps`, `forbidden_action`, `no_duplicate_side_effect`, `result_check`, `max_cost`, `max_latency_ms`, plus trajectory oracles over the whole call sequence: `tool_order`, `max_retries`, `no_call_loop`, and an optional pluggable `llm_judge` for open-ended quality checks (you supply the model call; agent-chaos never makes one itself).
 
 <details>
 <summary><b>Coming next (see the roadmap)</b></summary>
@@ -240,6 +240,7 @@ replay_scenario = Scenario(
 - [x] Record and replay for free, deterministic CI
 - [x] `chaos shrink`: reduce a failing trial's faults to the smallest set that still reproduces it
 - [x] Written stability policy (`docs/STABILITY.md`)
+- [x] Pluggable `llm_judge` oracle, SARIF and JUnit XML reports for CI consumers
 - [ ] Transparent proxy for any language, including MCP
 - [ ] GitHub Action with PR score diffs
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
