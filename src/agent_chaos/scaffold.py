@@ -1,10 +1,12 @@
 """``chaos init``: detect the agent framework in the current project and write a starter scenario file."""
 from __future__ import annotations
 
+import importlib
 import importlib.util
 
 _FRAMEWORK_SPECS = (
     ("langgraph", "langgraph"),
+    ("crewai", "crewai"),
     ("langchain_core", "langchain"),
 )
 
@@ -17,7 +19,21 @@ def detect_framework() -> str:
                 return label
         except (ImportError, ValueError):
             continue
+    if _has_openai_agents_sdk():
+        return "openai_agents"
     return "plain"
+
+
+def _has_openai_agents_sdk() -> bool:
+    # "agents" is too generic a module name to trust on find_spec alone; actually import it and
+    # fingerprint-check for the OpenAI Agents SDK's own public API before declaring it present.
+    try:
+        if importlib.util.find_spec("agents") is None:
+            return False
+        mod = importlib.import_module("agents")
+    except (ImportError, ValueError):
+        return False
+    return hasattr(mod, "function_tool") and hasattr(mod, "Agent")
 
 
 _HEADER = '''"""Starter agent-chaos scenario file (detected framework: {framework}).
@@ -101,7 +117,7 @@ SCENARIOS = [
 '''
 
 _LANGCHAIN_BODY = '''from agent_chaos import RunContext, Scenario, faults, oracles, policies
-from agent_chaos.adapters.langgraph import wrap_tools
+from agent_chaos.adapters.tools import wrap_tools
 
 # from your_agent_module import build_agent_executor, tools  # <- replace with your real agent
 
@@ -133,7 +149,79 @@ SCENARIOS = [
 ]
 '''
 
-_BODIES = {"plain": _PLAIN_BODY, "langchain": _LANGCHAIN_BODY, "langgraph": _LANGGRAPH_BODY}
+_CREWAI_BODY = '''from agent_chaos import RunContext, Scenario, faults, oracles, policies
+from agent_chaos.adapters.crewai import wrap_tools
+
+# from your_agent_module import build_crew, tools  # <- replace with your real crew and tools
+
+
+def my_agent(task: str, ctx: RunContext) -> dict:
+    """Replace this with your real CrewAI crew.
+
+    Wrap every tool with ``wrap_tools`` *before* building the crew, so agent-chaos can inject
+    faults into them:
+
+        wrap_tools(ctx, tools, side_effect=lambda t: t.name in {"refund", "send_email"})
+        crew = build_crew(tools)
+        return crew.kickoff(inputs={"task": task})
+    """
+    raise NotImplementedError("wire up your real CrewAI crew here")
+
+
+TASK = "Describe the task your agent should complete"
+
+SCENARIOS = [
+    Scenario(
+        name="tool_timeout",
+        target=my_agent,
+        task=TASK,
+        faults=[faults.Timeout("tool=search", policies.Probability(0.4))],
+        oracles=[oracles.max_steps(20)],
+        trials=20,
+    ),
+]
+'''
+
+_OPENAI_AGENTS_BODY = '''from agent_chaos import RunContext, Scenario, faults, oracles, policies
+from agent_chaos.adapters.openai_agents import wrap_function_tools
+
+# from your_agent_module import build_agent, tools  # <- replace with your real agent and tools
+
+
+def my_agent(task: str, ctx: RunContext) -> dict:
+    """Replace this with your real OpenAI Agents SDK agent.
+
+    Wrap every FunctionTool with ``wrap_function_tools`` *before* building the Agent, so
+    agent-chaos can inject faults into them:
+
+        wrap_function_tools(ctx, tools, side_effect=lambda t: t.name in {"refund", "send_email"})
+        agent = build_agent(tools)
+        return Runner.run_sync(agent, task)
+    """
+    raise NotImplementedError("wire up your real OpenAI Agents SDK agent here")
+
+
+TASK = "Describe the task your agent should complete"
+
+SCENARIOS = [
+    Scenario(
+        name="tool_timeout",
+        target=my_agent,
+        task=TASK,
+        faults=[faults.Timeout("tool=search", policies.Probability(0.4))],
+        oracles=[oracles.max_steps(20)],
+        trials=20,
+    ),
+]
+'''
+
+_BODIES = {
+    "plain": _PLAIN_BODY,
+    "langchain": _LANGCHAIN_BODY,
+    "langgraph": _LANGGRAPH_BODY,
+    "crewai": _CREWAI_BODY,
+    "openai_agents": _OPENAI_AGENTS_BODY,
+}
 
 
 def render_template(framework: str, out_name: str) -> str:

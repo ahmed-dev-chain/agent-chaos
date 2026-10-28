@@ -116,7 +116,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     init = sub.add_parser("init", help="detect the agent framework and write a starter scenario file")
     init.add_argument("--out", default="chaos_scenarios.py", help="path to write (default: chaos_scenarios.py)")
-    init.add_argument("--framework", choices=["plain", "langchain", "langgraph"],
+    init.add_argument("--framework", choices=["plain", "langchain", "langgraph", "crewai", "openai_agents"],
                        help="skip auto-detection and use this template")
     init.add_argument("--force", action="store_true", help="overwrite --out if it already exists")
     init.set_defaults(func=cmd_init)

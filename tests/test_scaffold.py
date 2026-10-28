@@ -7,11 +7,22 @@ from agent_chaos.scaffold import detect_framework, render_template
 
 
 def test_detect_framework_defaults_to_plain():
-    # neither langgraph nor langchain_core is a project dependency
+    # none of langgraph/crewai/langchain_core/agents is a project dependency
     assert detect_framework() == "plain"
 
 
-@pytest.mark.parametrize("framework", ["plain", "langchain", "langgraph"])
+def test_openai_agents_fingerprint_rejects_unrelated_module(monkeypatch):
+    import sys
+    import types
+
+    from agent_chaos import scaffold
+
+    fake = types.ModuleType("agents")  # no function_tool/Agent: an unrelated package named "agents"
+    monkeypatch.setitem(sys.modules, "agents", fake)
+    assert scaffold._has_openai_agents_sdk() is False
+
+
+@pytest.mark.parametrize("framework", ["plain", "langchain", "langgraph", "crewai", "openai_agents"])
 def test_render_template_is_valid_python_with_scenarios(framework):
     src = render_template(framework, "chaos_scenarios.py")
     tree = ast.parse(src)

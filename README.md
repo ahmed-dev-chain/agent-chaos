@@ -154,11 +154,13 @@ async target automatically. To confirm the patch genuinely intercepts the real O
 just a mock), copy [`.env.example`](.env.example) to `.env`, add a key, `pip install -e ".[real-sdk]"`, and
 run `python examples/real_sdk_check.py`. No key, no `.env` file: nothing in the core test suite needs either.
 
-A LangGraph/LangChain agent needs no `httpx` patch at all: wrap each node and tool directly, with no
-`langgraph`/`langchain-core` dependency required by agent-chaos itself:
+A LangGraph, LangChain, CrewAI or OpenAI Agents SDK agent needs no `httpx` patch at all: wrap each node
+and tool directly, with no hard dependency on any of those frameworks required by agent-chaos itself:
 
 ```python
-from agent_chaos.adapters.langgraph import wrap_node, wrap_tools
+from agent_chaos.adapters.langgraph import wrap_node        # LangGraph node wrapping
+from agent_chaos.adapters.tools import wrap_tools            # LangChain / CrewAI tool wrapping
+from agent_chaos.adapters.openai_agents import wrap_function_tools  # OpenAI Agents SDK FunctionTool
 
 graph = StateGraph(State)
 graph.add_node("search", wrap_node(ctx, "search", search_node))
@@ -206,9 +208,8 @@ def test_agent_survives_lost_payment_reply(chaos):
 - [x] Resilience score with Wilson confidence interval and a CI gate
 - [x] Terminal, JSON and HTML reports, pytest plugin, `httpx` interception (sync and async)
 - [x] Model and context faults (refusal, format drift, window overflow, memory corruption)
-- [x] LangGraph/LangChain adapter (node and tool wrapping, no hard dependency)
+- [x] LangGraph, LangChain, CrewAI and OpenAI Agents SDK adapters (no hard dependency on any of them)
 - [x] `chaos init` to scaffold a starter scenario file for your framework
-- [ ] OpenAI Agents SDK and CrewAI adapters
 - [ ] Transparent proxy for any language, including MCP
 - [ ] Record and replay for free, deterministic CI
 - [ ] GitHub Action with PR score diffs
