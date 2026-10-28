@@ -13,7 +13,7 @@ from . import __version__
 from .core.context import RunContext, _run_sync
 from .faults.base import FAULTS, load_plugins
 from .record import save_trace
-from .report import render, write_html, write_json
+from .report import render, write_html, write_json, write_junit, write_sarif
 from .runner import Scenario, run_all, run_trial
 from .scaffold import detect_framework, render_template
 
@@ -53,6 +53,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         print("HTML report:", write_html(summary, args.html))
     if args.json:
         write_json(summary, args.json)
+    if args.sarif:
+        write_sarif(summary, args.sarif, args.target)
+    if args.junit:
+        write_junit(summary, args.junit)
     return 0 if summary.gate_passed else 1
 
 
@@ -122,6 +126,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--min-score", type=float, default=0.0, help="fail the gate below this score")
     run.add_argument("--html", metavar="DIR", help="write an HTML report to DIR")
     run.add_argument("--json", metavar="FILE", help="write a JSON report to FILE")
+    run.add_argument("--sarif", metavar="FILE", help="write a SARIF 2.1.0 report to FILE")
+    run.add_argument("--junit", metavar="FILE", help="write a JUnit XML report to FILE")
     run.set_defaults(func=cmd_run)
 
     rep = sub.add_parser("replay", help="re-run one trial exactly and print its trace")
