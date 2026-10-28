@@ -11,11 +11,13 @@ from pathlib import Path
 
 from . import __version__
 from .core.context import RunContext, _run_sync
+from .core.events import Level
 from .faults.base import FAULTS, load_plugins
 from .record import save_trace
 from .report import render, write_html, write_json, write_junit, write_sarif
 from .runner import Scenario, run_all, run_trial
 from .scaffold import detect_framework, render_template
+from .shrink import shrink
 
 
 def load_scenarios(spec: str) -> list[Scenario]:
@@ -60,14 +62,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0 if summary.gate_passed else 1
 
 
-def cmd_replay(args: argparse.Namespace) -> int:
-    scenarios = load_scenarios(args.target)
-    match = [s for s in scenarios if s.name == args.scenario]
-    if not match:
-        raise SystemExit(f"chaos: no scenario named {args.scenario!r}; have {[s.name for s in scenarios]}")
-    if args.seed is not None:
-        match[0].seed = args.seed
-    result = run_trial(match[0], args.trial)
+def _print_trial(result) -> None:  # noqa: ANN001 - TrialResult, kept loose to avoid an import cycle
     print(f"scenario={result.scenario} trial={result.trial} seed={result.seed}")
     print(f"verdict: {result.verdict.level.value}  {result.verdict.reason}")
     print("trace:")
@@ -75,6 +70,32 @@ def cmd_replay(args: argparse.Namespace) -> int:
         faults = f"  <- {','.join(e['faults'])}" if e["faults"] else ""
         err = f"  !! {e['error']}" if e["error"] else ""
         print(f"  {e['id']:>2}. {e['name']}({json.dumps(e['args'])}){faults}{err}")
+
+
+def cmd_replay(args: argparse.Namespace) -> int:
+    scenarios = load_scenarios(args.target)
+    match = [s for s in scenarios if s.name == args.scenario]
+    if not match:
+        raise SystemExit(f"chaos: no scenario named {args.scenario!r}; have {[s.name for s in scenarios]}")
+    if args.seed is not None:
+        match[0].seed = args.seed
+    _print_trial(run_trial(match[0], args.trial))
+    return 0
+
+
+def cmd_shrink(args: argparse.Namespace) -> int:
+    scenarios = load_scenarios(args.target)
+    match = [s for s in scenarios if s.name == args.scenario]
+    if not match:
+        raise SystemExit(f"chaos: no scenario named {args.scenario!r}; have {[s.name for s in scenarios]}")
+    try:
+        shrunk = shrink(match[0], args.trial, Level(args.severity))
+    except ValueError as exc:
+        raise SystemExit(f"chaos: {exc}") from exc
+    print(f"chaos: shrunk {len(match[0].faults)} fault(s) to {len(shrunk.faults)}:")
+    for f in shrunk.faults:
+        print(f"  {f!r}")
+    _print_trial(run_trial(shrunk, args.trial))
     return 0
 
 
@@ -143,6 +164,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     rec.add_argument("--seed", type=int, default=None)
     rec.add_argument("--out", required=True, metavar="FILE", help="trace file to write (load with load_replay)")
     rec.set_defaults(func=cmd_record)
+
+    shr = sub.add_parser("shrink", help="reduce a failing trial's faults to the smallest set that still reproduces it")
+    shr.add_argument("target")
+    shr.add_argument("--scenario", required=True)
+    shr.add_argument("--trial", type=int, required=True)
+    shr.add_argument("--severity", choices=["failed", "unsafe"], default="failed",
+                      help="minimum verdict severity to preserve (default: failed)")
+    shr.set_defaults(func=cmd_shrink)
 
     fl = sub.add_parser("faults", help="list available faults")
     fl.set_defaults(func=cmd_faults)

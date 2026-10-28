@@ -22,6 +22,7 @@ chaos replay examples/support_agent.py:NAIVE --scenario <name> --trial <n>  # re
 chaos faults                        # list all registered faults
 chaos init                          # detect the framework, write a starter chaos_scenarios.py
 chaos record <target> --scenario <name> --out trace.json  # capture one real, unfaulted run
+chaos shrink <target> --scenario <name> --trial <n>  # reduce a failing trial's faults to the smallest reproducing set
 
 # optional, needs real API keys (copy .env.example -> .env) — not part of the test suite:
 pip install -e ".[real-sdk]" && python examples/real_sdk_check.py

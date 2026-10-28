@@ -14,7 +14,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Oracles (invariants, trajectory) | `oracles/base.py`, `oracles/trajectory.py` |
 | Scenario runner and gate | `runner.py` |
 | Resilience score and Wilson interval | `scoring.py` |
-| Terminal, JSON and HTML reports | `report/` |
+| Terminal, JSON, HTML, SARIF and JUnit XML reports | `report/` |
 | SDK-level interception (httpx, sync and async) | `intercept/httpx_patch.py` |
 | Shared tool wrapping (`func`/`coroutine` and `_run`/`_arun`) | `adapters/tools.py` |
 | LangGraph adapter (node wrapping) | `adapters/langgraph.py` |
@@ -22,7 +22,8 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | CrewAI adapter | `adapters/crewai.py` |
 | `chaos init` framework detection and scenario scaffold | `scaffold.py` |
 | Record and replay (`ReplayFault`, `save_trace`, `load_replay`) | `record.py` |
-| CLI (`run`, `replay`, `record`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
+| Failure shrinking (`shrink`) | `shrink.py` |
+| CLI (`run`, `replay`, `record`, `shrink`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
 
 ## Control flow of one trial
 
@@ -41,7 +42,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 
 ## Not built yet
 
-Transparent proxy mode, LLM-judge oracle, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
+Transparent proxy mode, LLM-judge oracle, baselines, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
@@ -68,3 +69,7 @@ Transparent proxy mode, LLM-judge oracle, GitHub Action wrapper, sweeps. See `RO
   task/inputs (branching purely on a tool's return value won't replay correctly if that tool's
   call count differs from the recording) -- it raises `ReplayMismatch` rather than silently
   guessing when that assumption breaks.
+- `shrink.py`'s `shrink` re-verifies every candidate fault subset by actually rerunning the trial,
+  so its result is always a genuine reproduction. It isn't guaranteed globally minimal, because
+  `Policy.should_fire` draws from `ctx.rng` for every fault in the list on every event (not just
+  the ones that end up firing), so removing one fault shifts the draws the rest consume.

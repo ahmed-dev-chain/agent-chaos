@@ -17,10 +17,12 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 
 ## v1.0: trustworthy
 - [x] Written stability policy (`docs/STABILITY.md`) -- actually *frozen* still waits for 1.0.0 itself
+- [x] SARIF and JUnit XML output
+- [x] Failure shrinking: `chaos shrink` reduces a failing trial's faults to the smallest reproducing set
 - [ ] GitHub Action with PR comment and score diff
-- [ ] Baselines and trend tracking, SARIF and JUnit output
+- [ ] Baselines and trend tracking
 - [ ] Calibrated LLM-judge oracle (optional)
 - [ ] Docs site and public benchmark of popular agent templates
 
 ## Later
-Adaptive adversary, failure shrinking, multi-agent faults, RAG and memory faults, browser faults, hosted dashboard, compliance packs.
+Adaptive adversary, multi-agent faults, RAG and memory faults, browser faults, hosted dashboard, compliance packs.
