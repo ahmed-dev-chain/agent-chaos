@@ -223,7 +223,9 @@ chaos run my_scenarios.py --baseline chaos-baseline.json                     # i
 ```
 
 `--sarif`/`--junit` write the same run to formats other CI tooling already consumes (GitHub code
-scanning, JUnit-reading dashboards).
+scanning, JUnit-reading dashboards). This repo's own `.github/workflows/chaos-pr.yml` does exactly
+this on every pull request: posts the score and gate status as a PR comment, using the baseline
+above and the automatic `GITHUB_TOKEN` -- no secret of yours required.
 
 ## Why not just use evals, tracing or red-teaming?
 
@@ -252,8 +254,8 @@ scanning, JUnit-reading dashboards).
 - [x] Written stability policy (`docs/STABILITY.md`)
 - [x] Pluggable `llm_judge` oracle, SARIF and JUnit XML reports for CI consumers
 - [x] File-based baselines (`--baseline`/`--update-baseline`) to gate on per-scenario regressions
+- [x] GitHub Action with PR score diffs (`.github/workflows/chaos-pr.yml`)
 - [ ] Transparent proxy for any language, including MCP
-- [ ] GitHub Action with PR score diffs
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 
 Details in [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf).

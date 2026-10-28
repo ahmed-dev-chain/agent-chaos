@@ -19,7 +19,8 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 - [x] Written stability policy (`docs/STABILITY.md`) -- actually *frozen* still waits for 1.0.0 itself
 - [x] SARIF and JUnit XML output
 - [x] Failure shrinking: `chaos shrink` reduces a failing trial's faults to the smallest reproducing set
-- [ ] GitHub Action with PR comment and score diff
+- [x] GitHub Action with PR comment and score diff (`.github/workflows/chaos-pr.yml` -- committed,
+      not yet live: runs once this branch merges to `master`)
 - [x] Baselines (file-based, `--baseline`/`--update-baseline`) -- "trend tracking" (history over time) not done
 - [x] Calibrated LLM-judge oracle (optional, fully pluggable -- no built-in provider)
 - [ ] Docs site and public benchmark of popular agent templates

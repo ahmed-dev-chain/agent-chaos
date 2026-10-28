@@ -31,6 +31,9 @@ pip install -e ".[real-sdk]" && python examples/real_sdk_check.py
 
 CI (`.github/workflows/ci.yml`) runs ruff, pytest, then gates on
 `chaos run examples/support_agent.py:HARDENED --min-score 95` across Python 3.10–3.13.
+`.github/workflows/chaos-pr.yml` additionally runs the gate against `.github/chaos-baseline.json`
+and posts a PR comment with the score; it only starts firing once this branch merges to `master`
+(`pull_request`-triggered workflows run off the file version at the PR's base branch).
 
 ## Architecture
 

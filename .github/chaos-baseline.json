@@ -1,0 +1,9 @@
+{
+  "format_drift": 1.0,
+  "lost_response": 1.0,
+  "malformed_output": 1.0,
+  "prompt_injection": 1.0,
+  "rate_limit": 1.0,
+  "tool_timeout": 1.0,
+  "window_overflow": 1.0
+}
