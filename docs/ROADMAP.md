@@ -12,8 +12,8 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 
 ## v0.5: works with anything
 - [x] Trajectory oracles (tool order, retry limits, loop detection)
+- [x] Record and replay for free, deterministic CI
 - [ ] Transparent proxy (HTTP, SSE streaming, MCP) for any language
-- [ ] Record and replay for free, deterministic CI
 
 ## v1.0: trustworthy
 - [ ] Frozen public API and written stability policy

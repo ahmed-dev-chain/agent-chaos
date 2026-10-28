@@ -20,3 +20,11 @@ class ToolTimeout(ChaosError):
 
 class StepLimitExceeded(ChaosError):
     """The target made more calls than the hard step cap allows (likely a loop)."""
+
+
+class ReplayMismatch(ChaosError):
+    """No recording exists for this call (kind/name/index) -- the target diverged from the recording."""
+
+
+class ReplayedError(ChaosError):
+    """The recorded call originally raised; replayed as this message (the original type is lost)."""

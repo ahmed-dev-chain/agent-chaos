@@ -21,6 +21,7 @@ chaos run examples/support_agent.py:HARDENED   # run the hardened agent (expect 
 chaos replay examples/support_agent.py:NAIVE --scenario <name> --trial <n>  # reproduce one exact trial
 chaos faults                        # list all registered faults
 chaos init                          # detect the framework, write a starter chaos_scenarios.py
+chaos record <target> --scenario <name> --out trace.json  # capture one real, unfaulted run
 
 # optional, needs real API keys (copy .env.example -> .env) — not part of the test suite:
 pip install -e ".[real-sdk]" && python examples/real_sdk_check.py
@@ -89,6 +90,11 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
   `scaffold.py`'s `_BODIES` and wire the module name into `detect_framework`'s `_FRAMEWORK_SPECS`
   (or a fingerprint check like `_has_openai_agents_sdk` if the module name is too generic to trust
   on `find_spec` alone).
+- **Record and replay** (`record.py`): `save_trace(ctx, path)` dumps `ctx.trace()`; `load_replay(path)`
+  builds a `ReplayFault` that, put in a `Scenario`'s `faults=[...]`, short-circuits every call with
+  the recorded response instead of running the real one — zero core changes, built entirely on the
+  existing `Fault`/`RunContext` contract. It matches by `(kind, name, index)`, not call position, so
+  it's safe to reuse across many trials of the same `Scenario`.
 
 ### Known v0.1/v0.2 limits (don't assume otherwise)
 

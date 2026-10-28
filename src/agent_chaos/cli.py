@@ -1,15 +1,18 @@
-"""Command line: ``chaos run | replay | faults``."""
+"""Command line: ``chaos run | replay | record | faults | init``."""
 from __future__ import annotations
 
 import argparse
 import importlib.util
+import inspect
 import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
 from . import __version__
+from .core.context import RunContext, _run_sync
 from .faults.base import FAULTS, load_plugins
+from .record import save_trace
 from .report import render, write_html, write_json
 from .runner import Scenario, run_all, run_trial
 from .scaffold import detect_framework, render_template
@@ -71,6 +74,23 @@ def cmd_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_record(args: argparse.Namespace) -> int:
+    scenarios = load_scenarios(args.target)
+    match = [s for s in scenarios if s.name == args.scenario]
+    if not match:
+        raise SystemExit(f"chaos: no scenario named {args.scenario!r}; have {[s.name for s in scenarios]}")
+    sc = match[0]
+    seed = args.seed if args.seed is not None else sc.seed
+    ctx = RunContext(seed, [], sc.hard_step_cap)  # no faults: record the real, unfaulted run
+    result = sc.target(sc.task, ctx)
+    if inspect.isawaitable(result):
+        result = _run_sync(result)
+    save_trace(ctx, args.out)
+    print(f"chaos: recorded {len(ctx.events)} calls to {args.out}")
+    print(f'       replay offline: faults=[load_replay("{args.out}")]')
+    return 0
+
+
 def cmd_faults(_: argparse.Namespace) -> int:
     load_plugins()
     for name, cls in sorted(FAULTS.items()):
@@ -110,6 +130,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     rep.add_argument("--trial", type=int, required=True)
     rep.add_argument("--seed", type=int, default=None)
     rep.set_defaults(func=cmd_replay)
+
+    rec = sub.add_parser("record", help="run a scenario's target with no faults and save the real trace")
+    rec.add_argument("target")
+    rec.add_argument("--scenario", required=True)
+    rec.add_argument("--seed", type=int, default=None)
+    rec.add_argument("--out", required=True, metavar="FILE", help="trace file to write (load with load_replay)")
+    rec.set_defaults(func=cmd_record)
 
     fl = sub.add_parser("faults", help="list available faults")
     fl.set_defaults(func=cmd_faults)

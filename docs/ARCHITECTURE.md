@@ -21,7 +21,8 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | OpenAI Agents SDK adapter (`FunctionTool.on_invoke_tool`) | `adapters/openai_agents.py` |
 | CrewAI adapter | `adapters/crewai.py` |
 | `chaos init` framework detection and scenario scaffold | `scaffold.py` |
-| CLI (`run`, `replay`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
+| Record and replay (`ReplayFault`, `save_trace`, `load_replay`) | `record.py` |
+| CLI (`run`, `replay`, `record`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
 
 ## Control flow of one trial
 
@@ -40,7 +41,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 
 ## Not built yet
 
-Transparent proxy mode, record and replay, LLM-judge oracle, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
+Transparent proxy mode, LLM-judge oracle, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
@@ -59,3 +60,11 @@ Transparent proxy mode, record and replay, LLM-judge oracle, GitHub Action wrapp
   and `adapters/crewai.py` both just re-export it; only `wrap_node` (LangGraph) and
   `wrap_function_tool`/`wrap_function_tools` (`adapters/openai_agents.py`, wrapping
   `FunctionTool.on_invoke_tool`) are framework-specific.
+- `record.py`'s `ReplayFault` matches recordings by `(kind, name, index)`, not call position, so
+  it replays identically across any number of trials in the same `Scenario`. A recording that
+  originally errored can't round-trip its exact exception type through `Event.to_dict()`'s
+  string-only `error` field, so replaying it raises a generic `ReplayedError` carrying that
+  string. Replay assumes the target's call *sequence* is otherwise deterministic given the same
+  task/inputs (branching purely on a tool's return value won't replay correctly if that tool's
+  call count differs from the recording) -- it raises `ReplayMismatch` rather than silently
+  guessing when that assumption breaks.

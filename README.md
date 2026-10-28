@@ -177,6 +177,28 @@ def test_agent_survives_lost_payment_reply(chaos):
     chaos.assert_resilient(result, min_score=95)     # fails on any unsafe outcome by default
 ```
 
+## Record and replay
+
+Capture one real, unfaulted run once, then replay it offline forever — no network, no model cost,
+the same result on every trial:
+
+```bash
+chaos record my_scenarios.py --scenario payment_reply_lost --out trace.json
+```
+
+```python
+from agent_chaos import Scenario, load_replay, oracles
+
+replay_scenario = Scenario(
+    name="replay_payment_reply_lost",
+    target=my_agent,
+    task="Pay invoice 17",
+    faults=[load_replay("trace.json")],               # no API key or network needed to run this
+    oracles=[oracles.no_duplicate_side_effect("pay")],
+    trials=20,                                         # replays identically every trial
+)
+```
+
 ## Gate your pull requests
 
 `chaos run` exits non-zero when the gate fails, so any CI can enforce it:
@@ -211,8 +233,8 @@ def test_agent_survives_lost_payment_reply(chaos):
 - [x] LangGraph, LangChain, CrewAI and OpenAI Agents SDK adapters (no hard dependency on any of them)
 - [x] `chaos init` to scaffold a starter scenario file for your framework
 - [x] Trajectory oracles (`tool_order`, `max_retries`, `no_call_loop`)
+- [x] Record and replay for free, deterministic CI
 - [ ] Transparent proxy for any language, including MCP
-- [ ] Record and replay for free, deterministic CI
 - [ ] GitHub Action with PR score diffs
 - [ ] Failure shrinking: reduce a failing storyline to the smallest one that still breaks the agent
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
