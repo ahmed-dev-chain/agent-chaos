@@ -77,6 +77,10 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
   `check_fn(ctx, result) -> Verdict | None`.
 - **New reporter**: add to `report/` (terminal/JSON/HTML exist; follow the `render`/`write_html`/
   `write_json` pattern used by `cli.py`).
+- **New framework adapter**: add a module under `adapters/` following `adapters/langgraph.py` —
+  duck-typed, no hard dependency on the target framework. It wraps the framework's own callables
+  (node functions, `tool.func`/`tool.coroutine`) via `ctx.wrap`/`ctx.awrap`; it doesn't touch
+  framework internals or require the framework installed to import agent-chaos itself.
 
 ### Known v0.1/v0.2 limits (don't assume otherwise)
 

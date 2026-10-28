@@ -16,6 +16,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Resilience score and Wilson interval | `scoring.py` |
 | Terminal, JSON and HTML reports | `report/` |
 | SDK-level interception (httpx, sync and async) | `intercept/httpx_patch.py` |
+| LangGraph/LangChain adapter (node and tool wrapping) | `adapters/langgraph.py` |
 | CLI (`run`, `replay`, `faults`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
 
 ## Control flow of one trial
@@ -35,7 +36,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 
 ## Not built yet
 
-Transparent proxy mode, record and replay, LangGraph/LangChain adapters, trajectory and LLM-judge oracles, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
+Transparent proxy mode, record and replay, OpenAI Agents SDK/CrewAI adapters, trajectory and LLM-judge oracles, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
@@ -47,3 +48,7 @@ Transparent proxy mode, record and replay, LangGraph/LangChain adapters, traject
   rather than yielding to the event loop — correct, but not concurrency-preserving, for that call.
   A fully async-native fault pipeline (`async def apply`) is a bigger step, not taken yet.
 - Faults are applied per call; storylines and fault composition arrive in v1.0.
+- `adapters/langgraph.py` is duck-typed (no `langgraph`/`langchain-core` dependency, hard or
+  optional): it wraps a node's plain callable, and a tool's `func`/`coroutine` attributes. A
+  custom `BaseTool` subclass that overrides `_run`/`_arun` directly instead of setting those
+  attributes isn't touched by `wrap_tool` — wrap its backing callable with `wrap_node` instead.
