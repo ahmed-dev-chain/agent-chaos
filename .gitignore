@@ -9,5 +9,6 @@ build/
 .ruff_cache/
 .mypy_cache/
 chaos-report/
+site/
 .env
 .DS_Store

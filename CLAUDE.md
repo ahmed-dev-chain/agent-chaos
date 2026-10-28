@@ -27,6 +27,9 @@ chaos run <target> --baseline FILE [--update-baseline]  # compare/update per-sce
 
 # optional, needs real API keys (copy .env.example -> .env) — not part of the test suite:
 pip install -e ".[real-sdk]" && python examples/real_sdk_check.py
+
+# optional docs site, not published anywhere yet:
+pip install -e ".[docs]" && mkdocs serve
 ```
 
 CI (`.github/workflows/ci.yml`) runs ruff, pytest, then gates on

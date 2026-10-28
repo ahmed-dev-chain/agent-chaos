@@ -1,0 +1,26 @@
+site_name: agent-chaos
+site_description: Chaos engineering for AI agents
+repo_url: https://github.com/ahmed-dev-chain/agent-chaos
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+    - scheme: slate
+      primary: deep orange
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Fault reference: faults.md
+  - Architecture: ARCHITECTURE.md
+  - Stability policy: STABILITY.md
+  - Roadmap: ROADMAP.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.highlight
+  - pymdownx.superfences

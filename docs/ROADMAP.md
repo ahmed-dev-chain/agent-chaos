@@ -23,7 +23,8 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
       not yet live: runs once this branch merges to `master`)
 - [x] Baselines (file-based, `--baseline`/`--update-baseline`) -- "trend tracking" (history over time) not done
 - [x] Calibrated LLM-judge oracle (optional, fully pluggable -- no built-in provider)
-- [ ] Docs site and public benchmark of popular agent templates
+- [x] Docs site skeleton (`mkdocs.yml`, `pip install -e ".[docs]" && mkdocs serve`) -- not published
+      to GitHub Pages yet; "public benchmark of popular agent templates" is research/writing, not done
 
 ## Later
 Adaptive adversary, multi-agent faults, RAG and memory faults, browser faults, hosted dashboard, compliance packs.

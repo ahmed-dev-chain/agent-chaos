@@ -255,6 +255,7 @@ above and the automatic `GITHUB_TOKEN` -- no secret of yours required.
 - [x] Pluggable `llm_judge` oracle, SARIF and JUnit XML reports for CI consumers
 - [x] File-based baselines (`--baseline`/`--update-baseline`) to gate on per-scenario regressions
 - [x] GitHub Action with PR score diffs (`.github/workflows/chaos-pr.yml`)
+- [x] Docs site skeleton (`mkdocs.yml` -- not published yet)
 - [ ] Transparent proxy for any language, including MCP
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 
