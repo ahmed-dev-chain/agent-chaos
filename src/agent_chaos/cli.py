@@ -15,8 +15,16 @@ from .runner import Scenario, run_all, run_trial
 
 
 def load_scenarios(spec: str) -> list[Scenario]:
-    """``path/to/file.py`` (uses SCENARIOS) or ``path/to/file.py:ATTR``."""
-    path, _, attr = spec.partition(":")
+    """``path/to/file.py`` (uses SCENARIOS) or ``path/to/file.py:ATTR``.
+
+    Splits on the *last* colon, not the first, so a Windows drive letter (``C:\\...``) isn't
+    mistaken for the ``:ATTR`` separator.
+    """
+    path, attr = spec, ""
+    if ":" in spec:
+        candidate_path, _, candidate_attr = spec.rpartition(":")
+        if candidate_path and candidate_attr and not any(c in candidate_attr for c in "/\\"):
+            path, attr = candidate_path, candidate_attr
     attr = attr or "SCENARIOS"
     file = Path(path).resolve()
     if not file.exists():

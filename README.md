@@ -139,14 +139,19 @@ SCENARIOS = [payment_reply_lost]
 chaos run my_scenarios.py --min-score 95 --html chaos-report --json chaos.json
 ```
 
-Model and API traffic made through `httpx` (which the OpenAI and Anthropic SDKs use) can be intercepted too:
+Model and API traffic made through `httpx` (which the OpenAI and Anthropic SDKs use) can be intercepted too, sync or async:
 
 ```python
 from agent_chaos.intercept import patch_httpx
 
 with patch_httpx(ctx):
-    run_my_agent()          # every HTTP call now passes through the fault engine
+    run_my_agent()          # every HTTP call now passes through the fault engine, sync or async
 ```
+
+Agents can be async end to end: `ctx.awrap(...)` wraps async tools, and `chaos run`/`run_scenario` await an
+async target automatically. To confirm the patch genuinely intercepts the real OpenAI/Anthropic SDKs (not
+just a mock), copy [`.env.example`](.env.example) to `.env`, add a key, `pip install -e ".[real-sdk]"`, and
+run `python examples/real_sdk_check.py`. No key, no `.env` file: nothing in the core test suite needs either.
 
 ## Use it in pytest
 
@@ -187,7 +192,7 @@ def test_agent_survives_lost_payment_reply(chaos):
 - [x] Tool and security faults, including partial success and indirect injection
 - [x] Oracles for loops, forbidden actions, duplicate side effects and results
 - [x] Resilience score with Wilson confidence interval and a CI gate
-- [x] Terminal, JSON and HTML reports, pytest plugin, `httpx` interception
+- [x] Terminal, JSON and HTML reports, pytest plugin, `httpx` interception (sync and async)
 - [x] Model and context faults (refusal, format drift, window overflow, memory corruption)
 - [ ] LangGraph, LangChain and OpenAI Agents SDK adapters
 - [ ] Transparent proxy for any language, including MCP

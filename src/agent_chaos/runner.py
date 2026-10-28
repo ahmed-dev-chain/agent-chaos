@@ -1,11 +1,12 @@
 """Scenario runner: expands trials, applies faults, judges, scores."""
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from .core.context import RunContext
+from .core.context import RunContext, _run_sync
 from .core.errors import StepLimitExceeded
 from .core.events import SEVERITY, Level, Verdict
 from .faults.base import Fault
@@ -102,6 +103,8 @@ def run_trial(scenario: Scenario, trial: int) -> TrialResult:
     result: Any = None
     try:
         result = scenario.target(scenario.task, ctx)
+        if inspect.isawaitable(result):  # the target is an async agent; drive it to completion
+            result = _run_sync(result)
     except StepLimitExceeded as exc:
         verdict = Verdict(Level.FAILED, f"loop detected: {exc}")
     except Exception as exc:  # noqa: BLE001 - any crash is a failed trial
