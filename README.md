@@ -76,7 +76,7 @@ Faults strike where real agents get hurt. Each one is a few lines of code and is
 | Context | `memory_corruption` | An earlier entry is silently altered | State consistency |
 
 **When** a fault fires is a separate, composable policy: `Always`, `Probability(p)`, `OnCall(n)`, `FirstN(n)`.
-**How** the agent is judged is a separate set of oracles: `max_steps`, `forbidden_action`, `no_duplicate_side_effect`, `result_check`, `max_cost`, `max_latency_ms`.
+**How** the agent is judged is a separate set of oracles: `max_steps`, `forbidden_action`, `no_duplicate_side_effect`, `result_check`, `max_cost`, `max_latency_ms`, plus trajectory oracles over the whole call sequence: `tool_order`, `max_retries`, `no_call_loop`.
 
 <details>
 <summary><b>Coming next (see the roadmap)</b></summary>
@@ -210,6 +210,7 @@ def test_agent_survives_lost_payment_reply(chaos):
 - [x] Model and context faults (refusal, format drift, window overflow, memory corruption)
 - [x] LangGraph, LangChain, CrewAI and OpenAI Agents SDK adapters (no hard dependency on any of them)
 - [x] `chaos init` to scaffold a starter scenario file for your framework
+- [x] Trajectory oracles (`tool_order`, `max_retries`, `no_call_loop`)
 - [ ] Transparent proxy for any language, including MCP
 - [ ] Record and replay for free, deterministic CI
 - [ ] GitHub Action with PR score diffs

@@ -74,8 +74,9 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
   on the structured output of whatever call they're attached to rather than a dedicated context event
   kind — there isn't one yet. Third-party fault packs register under the `agent_chaos.faults` entry point
   (loaded via `faults.base.load_plugins`).
-- **New oracle**: add a function in `oracles/base.py` returning an `Oracle(name, check_fn)`, where
-  `check_fn(ctx, result) -> Verdict | None`.
+- **New oracle**: add a function in `oracles/base.py` (per-call invariants) or `oracles/trajectory.py`
+  (sequence-level checks like `tool_order`, `max_retries`, `no_call_loop`) returning an
+  `Oracle(name, check_fn)`, where `check_fn(ctx, result) -> Verdict | None`.
 - **New reporter**: add to `report/` (terminal/JSON/HTML exist; follow the `render`/`write_html`/
   `write_json` pattern used by `cli.py`).
 - **New framework adapter**: `adapters/tools.py` already covers any tool shaped like LangChain's

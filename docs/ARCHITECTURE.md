@@ -11,7 +11,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Fault base class, `where` selectors, plugin loading via entry points | `faults/base.py` |
 | Tool, model, context and security faults | `faults/tool.py`, `faults/model.py`, `faults/context.py`, `faults/security.py` |
 | Policies | `policies.py` |
-| Oracles | `oracles/base.py` |
+| Oracles (invariants, trajectory) | `oracles/base.py`, `oracles/trajectory.py` |
 | Scenario runner and gate | `runner.py` |
 | Resilience score and Wilson interval | `scoring.py` |
 | Terminal, JSON and HTML reports | `report/` |
@@ -40,7 +40,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 
 ## Not built yet
 
-Transparent proxy mode, record and replay, trajectory and LLM-judge oracles, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
+Transparent proxy mode, record and replay, LLM-judge oracle, GitHub Action wrapper, sweeps. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
