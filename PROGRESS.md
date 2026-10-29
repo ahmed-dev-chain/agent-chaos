@@ -15,6 +15,18 @@ v1.0 ("trustworthy") roadmap line is checked off too, each with an honestly-stat
 "done" needed qualifying — see the table below. 157 tests passing, `ruff check` clean, zero
 runtime dependencies in the core (optional extras: `real-sdk`, `proxy`, `docs`, `dev`).
 
+**Published and installable**: `pip install agent-chaos-toolkit` / `pipx install agent-chaos-toolkit`
+works for anyone, verified with real fresh-venv installs against the actual PyPI index
+(`agent-chaos` itself was already taken by an unrelated project; import name `agent_chaos` and the
+`chaos` command are unaffected). Releases publish automatically on any `v*` tag push via PyPI
+Trusted Publishing (`.github/workflows/release.yml`, `RELEASING.md`) — no token ever stored as a
+secret. The GitHub repo is now **public** (it had to be — PyPI's rendered README needs the banner/
+screenshot images and badges to resolve via `raw.githubusercontent.com`/Actions badges, which 404
+on a private repo regardless of URL scheme; this was the actual root cause of "broken images on
+PyPI," not a markdown/path bug). Current release: `0.2.1` (`0.2.0`'s README is permanently broken
+since PyPI won't let a published version's files be replaced — harmless, since `pip install`
+always resolves to latest).
+
 ## Done
 
 | Area | What shipped | Caveat, if any |
@@ -35,6 +47,7 @@ runtime dependencies in the core (optional extras: `real-sdk`, `proxy`, `docs`, 
 | `agent_chaos.claude.call_claude` | Works via `ANTHROPIC_API_KEY` **or** a logged-in `claude` CLI subscription, no code change | CLI path shells out per call — fine for scripted checks, not high-throughput |
 | Transparent proxy | `chaos proxy`, `intercept.proxy.run_proxy`, local CA, selective HTTPS MITM (allow-listed hosts only) | buffered responses (no true SSE streaming); MCP-over-stdio uncovered; `cryptography` not installed in CI, so proxy tests are importorskip-gated and currently skip there |
 | README setup docs | Requirements, "which install do I need" extras table | — |
+| PyPI publish | `agent-chaos-toolkit` on PyPI, trusted-publishing release pipeline, repo made public | `0.2.0` has a permanently broken README on PyPI (fixed in `0.2.1`); see note above |
 
 Each of these was verified by hand against real traffic/processes, not just unit tests, per a
 lesson learned mid-project: the first `ReplayFault` design and the first `proxy_connect.py`
@@ -57,8 +70,9 @@ not a single obvious next step.
 3. **Trend tracking over time** for baselines (`baseline.py` currently holds one snapshot). Needs
    a storage decision (still file-based? SQLite? something in `.github/`?) — ask before building.
 4. **Publish the docs site** to GitHub Pages (the `mkdocs.yml` skeleton already builds clean).
-   Needs a decision on whether/how (a `gh-pages` branch + Action, or `mkdocs gh-deploy` run by
-   hand) — low risk, but it's a repo-settings change (enabling Pages), so confirm first.
+   Now easier since the repo is public (private repos need a paid plan for Pages). Still needs a
+   decision on how (a `gh-pages` branch + Action, or `mkdocs gh-deploy` run by hand) and confirming
+   you want Pages enabled (a repo-settings change) — ask first.
 5. **MCP-over-stdio** fault injection. Different transport entirely (no network), would need its
    own interception strategy — not an extension of the proxy.
 6. **"Later" bucket** (`docs/ROADMAP.md`): adaptive adversary, multi-agent faults, RAG/memory
