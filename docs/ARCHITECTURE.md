@@ -16,6 +16,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Resilience score and Wilson interval | `scoring.py` |
 | Terminal, JSON, HTML, SARIF and JUnit XML reports | `report/` |
 | SDK-level interception (httpx, sync and async) | `intercept/httpx_patch.py` |
+| Transparent forward proxy, local CA, HTTPS MITM (allow-listed hosts) | `intercept/proxy.py`, `intercept/proxy_ca.py`, `intercept/proxy_connect.py` |
 | Call Claude via API key or Claude Code CLI subscription | `claude.py` |
 | Shared tool wrapping (`func`/`coroutine` and `_run`/`_arun`) | `adapters/tools.py` |
 | LangGraph adapter (node wrapping) | `adapters/langgraph.py` |
@@ -25,7 +26,7 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 | Record and replay (`ReplayFault`, `save_trace`, `load_replay`) | `record.py` |
 | Failure shrinking (`shrink`) | `shrink.py` |
 | File-based baselines (`save_baseline`, `compare_baseline`) | `baseline.py` |
-| CLI (`run`, `replay`, `record`, `shrink`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
+| CLI (`run`, `replay`, `record`, `shrink`, `proxy`, `faults`, `init`) and pytest fixture | `cli.py`, `pytest_plugin.py` |
 
 ## Control flow of one trial
 
@@ -38,14 +39,29 @@ Five layers, top to bottom: **interfaces** (CLI, pytest plugin, Python API) -> *
 5. After the target returns, oracles inspect the trace and result. The worst verdict wins.
 6. Verdicts roll up into the score, interval and gate.
 
+## Interception strategies
+
+Three ways to get a system under test's calls through the fault engine, least to most invasive to
+set up and broadest to narrowest in what they can reach -- matching the blueprint's original
+three-strategy design, now all actually built:
+
+| Strategy | How | Reaches |
+| --- | --- | --- |
+| `ctx.wrap`/`ctx.awrap` | Wrap a Python callable directly | In-process Python tools, sync or async |
+| `patch_httpx` | Monkeypatch `httpx.Client`/`AsyncClient` | Any in-process Python code using httpx (most LLM SDKs) |
+| `intercept.proxy.run_proxy` (`chaos proxy`) | A local forward proxy + CA, via `HTTP(S)_PROXY` | Any process, any language, as long as it respects proxy env vars and trusts the local CA for allow-listed hosts |
+
+All three feed the exact same `Event`/`Fault`/`Oracle` pipeline -- a fault, oracle or reporter
+never needs to know which one produced the event it's looking at.
+
 ## Extension points (stable contract)
 
 `Fault.apply`, `Policy.should_fire`, `Oracle.__call__`, reporters, and (next) adapters. Third-party fault packs register under the `agent_chaos.faults` entry point.
 
 ## Not built yet
 
-Transparent proxy mode, trend tracking over time, sweeps, the public benchmark write-up, and
-publishing the docs site. See `ROADMAP.md` and the blueprint PDF.
+True byte-level SSE streaming through the proxy, MCP-over-stdio, trend tracking over time, sweeps,
+the public benchmark write-up, and publishing the docs site. See `ROADMAP.md` and the blueprint PDF.
 
 ## Known limits of v0.1 / v0.2
 
@@ -89,3 +105,24 @@ publishing the docs site. See `ROADMAP.md` and the blueprint PDF.
   path shells out per call, so it's slower than the API and inherits whatever the CLI's own
   permission/trust prompts require in an untrusted working directory -- it's meant for scripted
   checks and small agents, not high-throughput use.
+- `intercept/proxy.py`/`proxy_connect.py` need the `cryptography` package (`pip install -e
+  ".[proxy]"`) for HTTPS; plain HTTP proxying needs nothing extra. Not installed in the `dev`
+  extra or CI by default (a deliberate choice to keep `pip install -e ".[dev]"` light), so
+  `tests/test_proxy_ca.py`/`test_proxy_connect.py`/`test_proxy_cli.py` are
+  `pytest.importorskip("cryptography")`-gated and silently skip in a plain CI run -- the proxy's
+  correctness, including the HTTPS MITM path against a real internet endpoint, was verified by
+  hand, not continuously, which is a real gap worth closing (installing `.[proxy]` in CI) before
+  leaning on this feature for anything load-bearing.
+- Every response the proxy forwards is fully buffered before being sent on, including the
+  client-facing leg of an HTTPS MITM -- there is no true chunk-level streaming passthrough, so a
+  real SSE stream arrives all at once rather than incrementally, and a fault that corrupts a huge
+  response buffers all of it first. Request bodies similarly aren't chunked-encoding-aware; only
+  `Content-Length` and chunked *responses* are handled.
+- Only hosts in a `Scenario`'s `allow_hosts` (or passed directly to `run_proxy`) are decrypted; any
+  other HTTPS traffic through the same proxy run is tunneled opaquely and produces no `Event` at
+  all -- by design (see "Interception strategies" above), but it means a scenario that forgets to
+  allow-list a host its agent actually calls will silently fault-test nothing for that host rather
+  than erroring.
+- `chaos proxy` never calls `Scenario.target` -- the real agent is the external `-- <command...>`.
+  A `Scenario` used with `run_proxy` directly from Python (not via the CLI) *does* go through
+  `target`/`run_trial`/oracles/scoring normally; see `examples/proxy_check.py`.

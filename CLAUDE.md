@@ -24,6 +24,10 @@ chaos init                          # detect the framework, write a starter chao
 chaos record <target> --scenario <name> --out trace.json  # capture one real, unfaulted run
 chaos shrink <target> --scenario <name> --trial <n>  # reduce a failing trial's faults to the smallest reproducing set
 chaos run <target> --baseline FILE [--update-baseline]  # compare/update per-scenario pass rates
+chaos proxy <target> --scenario <name> -- <command...>  # fault-test any non-Python process's HTTP(S)
+
+# optional, needs the proxy extra (cryptography) for HTTPS; not installed in dev/CI by default:
+pip install -e ".[proxy]"
 
 # optional, needs real API keys (copy .env.example -> .env) — not part of the test suite:
 pip install -e ".[real-sdk]" && python examples/real_sdk_check.py
@@ -45,8 +49,8 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
 **interfaces** (`cli.py`, `pytest_plugin.py`, Python API) → **orchestration** (`runner.py`: expands a
 `Scenario` into seeded trials) → **engines** (`faults/`, `oracles/`, `scoring.py`, `report/`) →
 **interception** (`core/context.py`'s `RunContext.call`/`.wrap` and async `.acall`/`.awrap`,
-`intercept/httpx_patch.py`) → **system under test** (the agent code being tested, e.g.
-`examples/support_agent.py`).
+`intercept/httpx_patch.py`, `intercept/proxy.py`'s `run_proxy` for any external process) →
+**system under test** (the agent code being tested, e.g. `examples/support_agent.py`).
 
 ### Control flow of one trial (`runner.run_trial`)
 
@@ -109,6 +113,16 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
   and the local `claude` CLI (no key, no extra dependency, needs `claude login` already done). Since
   it's just a callable, wrap it with `ctx.wrap("claude", call_claude, kind=Kind.MODEL_CALL)` like any
   other tool — fault injection doesn't care which backend answered.
+- **Transparent proxy** (`intercept/proxy.py`, `proxy_ca.py`, `proxy_connect.py`): `run_proxy(ctx,
+  allow_hosts)` is a sync context manager yielding a `ProxyHandle` (`.url`, `.env`, `.ca_cert_path`)
+  — launch any external process with `.env` merged into its environment and its HTTPS traffic to an
+  allow-listed host gets decrypted and routed through `ctx.acall` exactly like `patch_httpx`.
+  Non-allow-listed hosts are tunneled opaquely and produce no `Event` — see
+  `docs/ARCHITECTURE.md`'s "Interception strategies" and known limits before changing this; the
+  CONNECT/MITM mechanics (`proxy_connect._upgrade_to_tls_server`) are the riskiest code in the
+  project (a wrong `loop.start_tls` protocol wiring silently hangs rather than erroring — it did,
+  once, during development) and deserve a real curl/httpbin-style manual check, not just unit
+  tests, for any change.
 
 ### Known v0.1/v0.2 limits (don't assume otherwise)
 
@@ -121,5 +135,9 @@ Five layers (see `docs/ARCHITECTURE.md` for the authoritative version):
   the API, and subject to the CLI's own trust/permission prompts in an unfamiliar working
   directory. It's for scripted checks and modest agent workloads, not high-throughput use.
 - Faults apply per-call; there is no multi-step storyline/composition yet (planned for v1.0).
+- The proxy buffers every response fully (no true SSE streaming passthrough yet), and its
+  `cryptography` dependency (the `proxy` extra) isn't installed in `dev`/CI, so
+  `test_proxy_ca.py`/`test_proxy_connect.py`/`test_proxy_cli.py` are importorskip-gated and
+  silently skip in a plain `pip install -e ".[dev]"` run — don't assume CI is exercising them.
 - New capabilities are meant to land as plugins/scenario packs, not core changes — see
   `docs/ROADMAP.md`'s stated rule, before adding core surface area.

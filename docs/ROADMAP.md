@@ -14,7 +14,11 @@ Rule: new capability arrives as a plugin or scenario pack, never as a core chang
 ## v0.5: works with anything
 - [x] Trajectory oracles (tool order, retry limits, loop detection)
 - [x] Record and replay for free, deterministic CI
-- [ ] Transparent proxy (HTTP, SSE streaming, MCP) for any language
+- [x] Transparent proxy for any language (`chaos proxy`, `intercept.proxy.run_proxy`) -- HTTP and
+      HTTPS (selective MITM, allow-listed hosts only) verified against real internet traffic;
+      responses are buffered, not forwarded byte-for-byte, so true SSE streaming isn't supported
+      yet; MCP-over-HTTP/SSE works for free (it's just HTTP) but MCP-over-stdio is a different,
+      uncovered transport. See `docs/ARCHITECTURE.md`'s known limits.
 
 ## v1.0: trustworthy
 - [x] Written stability policy (`docs/STABILITY.md`) -- actually *frozen* still waits for 1.0.0 itself

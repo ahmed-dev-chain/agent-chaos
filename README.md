@@ -188,6 +188,34 @@ graph.add_node("search", wrap_node(ctx, "search", search_node))
 wrap_tools(ctx, [search_tool, refund_tool], side_effect=lambda t: t.name == "refund_tool")
 ```
 
+### Any language: the transparent proxy
+
+For an agent that isn't Python at all — a Node agent, a compiled binary, a container — point its
+`HTTP_PROXY`/`HTTPS_PROXY` at a local proxy agent-chaos runs, and its traffic flows through the same
+fault engine as everything else. HTTPS is decrypted (and fault-tested) only for hosts you explicitly
+allow-list; anything else is tunneled opaquely, untouched. Needs `pip install -e ".[proxy]"`
+(`cryptography`, for the local CA — zero extra dependency for plain HTTP):
+
+```bash
+chaos proxy my_scenarios.py --scenario my_curl_scenario -- curl https://api.example.com
+```
+
+```python
+from agent_chaos import Scenario
+from agent_chaos.intercept import run_proxy
+
+def my_agent(task, ctx):
+    with run_proxy(ctx, allow_hosts=["api.example.com"]) as p:
+        subprocess.run(["curl", "-x", p.url, "--cacert", p.ca_cert_path, "https://api.example.com"],
+                        env={**os.environ, **p.env})
+
+SCENARIOS = [Scenario("curl_check", my_agent, "fetch the API", allow_hosts=["api.example.com"])]
+```
+
+Known limits: responses are buffered, not streamed byte-for-byte (no true SSE passthrough yet),
+and MCP works only over HTTP/SSE (MCP-over-stdio isn't a network transport at all, so it's out of
+reach). See `docs/ARCHITECTURE.md` for the full list.
+
 ## Use it in pytest
 
 The plugin registers automatically when the package is installed.
@@ -274,7 +302,7 @@ above and the automatic `GITHUB_TOKEN` -- no secret of yours required.
 - [x] GitHub Action with PR score diffs (`.github/workflows/chaos-pr.yml`)
 - [x] Docs site skeleton (`mkdocs.yml` -- not published yet)
 - [x] Call Claude via API key or Claude Code subscription, no code change (`agent_chaos.claude.call_claude`)
-- [ ] Transparent proxy for any language, including MCP
+- [x] Transparent proxy for any language (`chaos proxy`, allow-listed HTTPS MITM), verified against real internet traffic
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 
 Details in [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf).

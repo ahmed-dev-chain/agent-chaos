@@ -41,6 +41,7 @@ class ProxyResponse:
 class ProxyHandle:
     url: str
     env: dict[str, str] = field(default_factory=dict)
+    ca_cert_path: str | None = None
 
 
 async def _read_headers(reader: asyncio.StreamReader) -> bytes:
@@ -277,7 +278,18 @@ class _ProxyContext:
         self._thread.wait_ready()
         url = f"http://{self.host}:{self._thread.actual_port}"
         env = {"HTTP_PROXY": url, "http_proxy": url, "HTTPS_PROXY": url, "https_proxy": url}
-        return ProxyHandle(url=url, env=env)
+
+        ca_cert_path = None
+        if self.allow_hosts:
+            # only needed (and only needs cryptography) once there's an allow-listed host to MITM
+            from .proxy_connect import _get_ca
+
+            ca_cert_path = str(_get_ca().cert_path)
+            env["SSL_CERT_FILE"] = ca_cert_path
+            env["REQUESTS_CA_BUNDLE"] = ca_cert_path
+            env["NODE_EXTRA_CA_CERTS"] = ca_cert_path
+
+        return ProxyHandle(url=url, env=env, ca_cert_path=ca_cert_path)
 
     def __exit__(self, *exc_info: object) -> None:
         if self._thread:

@@ -131,6 +131,18 @@ def test_connect_to_unreachable_non_allowlisted_host_returns_bad_gateway():
     assert not ctx.events
 
 
+def test_handle_exposes_ca_cert_and_env_only_when_allow_hosts_given():
+    ctx = RunContext(0, [])
+    with run_proxy(ctx, []) as p_no_hosts:
+        assert p_no_hosts.ca_cert_path is None
+        assert "SSL_CERT_FILE" not in p_no_hosts.env
+
+    with run_proxy(ctx, ["testhost.example"]) as p_with_hosts:
+        assert p_with_hosts.ca_cert_path == str(_get_ca().cert_path)
+        for key in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "NODE_EXTRA_CA_CERTS"):
+            assert p_with_hosts.env[key] == p_with_hosts.ca_cert_path
+
+
 def _https_via_proxy_direct_port(proxy_url, target_host, target_port, ca_path, timeout=5):
     proxy_host, proxy_port = proxy_url.replace("http://", "").split(":")
     ctx = ssl.create_default_context(cafile=ca_path)

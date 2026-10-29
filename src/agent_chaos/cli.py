@@ -1,4 +1,4 @@
-"""Command line: ``chaos run | replay | record | faults | init``."""
+"""Command line: ``chaos run | replay | record | shrink | proxy | faults | init``."""
 from __future__ import annotations
 
 import argparse
@@ -12,7 +12,7 @@ from pathlib import Path
 from . import __version__
 from .baseline import compare_baseline, save_baseline
 from .core.context import RunContext, _run_sync
-from .core.events import Level
+from .core.events import SEVERITY, Level, Verdict
 from .faults.base import FAULTS, load_plugins
 from .record import save_trace
 from .report import render, render_baseline_diff, write_html, write_json, write_junit, write_sarif
@@ -126,6 +126,41 @@ def cmd_record(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_proxy(args: argparse.Namespace) -> int:
+    if not args.command:
+        raise SystemExit("chaos proxy: no command given; usage: chaos proxy <target> --scenario NAME -- <command...>")
+    scenarios = load_scenarios(args.target)
+    match = [s for s in scenarios if s.name == args.scenario]
+    if not match:
+        raise SystemExit(f"chaos: no scenario named {args.scenario!r}; have {[s.name for s in scenarios]}")
+    sc = match[0]
+    if not sc.allow_hosts:
+        print("chaos: warning: this scenario's allow_hosts is empty -- HTTPS traffic will be "
+              "tunneled opaquely, untouched, not fault-tested (see docs/ARCHITECTURE.md)")
+
+    import os
+    import subprocess
+
+    from .intercept import run_proxy
+
+    seed = args.seed if args.seed is not None else sc.seed
+    ctx = RunContext(seed, sc.faults, sc.hard_step_cap)
+    with run_proxy(ctx, sc.allow_hosts) as p:
+        print(f"chaos: proxy at {p.url}  allow_hosts={list(sc.allow_hosts)}")
+        if p.ca_cert_path:
+            print(f"       CA cert (pass explicitly if your client needs --cacert/-ca-bundle): {p.ca_cert_path}")
+        proc = subprocess.run(args.command, env={**os.environ, **p.env})
+
+    print(f"chaos: {len(ctx.events)} call(s) recorded")
+    verdict = Verdict(Level.SURVIVED, "")
+    for oracle in sc.oracles:
+        found = oracle(ctx, None)
+        if found and SEVERITY[found.level] > SEVERITY[verdict.level]:
+            verdict = found
+    print(f"verdict: {verdict.level.value}  {verdict.reason}")
+    return 0 if proc.returncode == 0 and verdict.level not in (Level.FAILED, Level.UNSAFE) else 1
+
+
 def cmd_faults(_: argparse.Namespace) -> int:
     load_plugins()
     for name, cls in sorted(FAULTS.items()):
@@ -146,6 +181,15 @@ def cmd_init(args: argparse.Namespace) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    argv = list(argv if argv is not None else sys.argv[1:])
+    # "chaos proxy <target> --scenario NAME -- <command...>": split off the command manually.
+    # argparse.REMAINDER doesn't interleave reliably with other options on the same subparser.
+    command: list[str] | None = None
+    if "--" in argv:
+        idx = argv.index("--")
+        command = argv[idx + 1:]
+        argv = argv[:idx]
+
     parser = argparse.ArgumentParser(prog="chaos", description="Chaos engineering for AI agents")
     parser.add_argument("--version", action="version", version=f"agent-chaos {__version__}")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -186,6 +230,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                       help="minimum verdict severity to preserve (default: failed)")
     shr.set_defaults(func=cmd_shrink)
 
+    prox = sub.add_parser(
+        "proxy",
+        help="run a command through the transparent proxy and fault-test its HTTPS traffic",
+        description="usage: chaos proxy <target> --scenario NAME [--seed N] -- <command...>",
+    )
+    prox.add_argument("target")
+    prox.add_argument("--scenario", required=True)
+    prox.add_argument("--seed", type=int, default=None)
+    prox.set_defaults(func=cmd_proxy)
+
     fl = sub.add_parser("faults", help="list available faults")
     fl.set_defaults(func=cmd_faults)
 
@@ -197,6 +251,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     init.set_defaults(func=cmd_init)
 
     args = parser.parse_args(argv)
+    if args.cmd == "proxy":
+        args.command = command or []
     return args.func(args)
 
 

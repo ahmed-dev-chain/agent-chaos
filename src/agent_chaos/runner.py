@@ -27,6 +27,9 @@ class Scenario:
     seed: int = 0
     category: str = "general"
     hard_step_cap: int = 100
+    # Hosts intercept.proxy.run_proxy (chaos proxy) may MITM-decrypt and fault-test over HTTPS.
+    # Unused by every other interception path (ctx.wrap, patch_httpx).
+    allow_hosts: Sequence[str] = ()
 
 
 @dataclass
