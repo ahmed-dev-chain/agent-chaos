@@ -15,7 +15,7 @@
 
 **Your agent works in the demo. Does it work when everything breaks?**
 
-[Demo](#see-it-fail-then-survive) &nbsp;|&nbsp; [What it breaks](#what-it-breaks) &nbsp;|&nbsp; [How it works](#how-it-works) &nbsp;|&nbsp; [Quickstart](#quickstart) &nbsp;|&nbsp; [pytest](#use-it-in-pytest) &nbsp;|&nbsp; [CI gate](#gate-your-pull-requests) &nbsp;|&nbsp; [Roadmap](#roadmap)
+[Demo](#see-it-fail-then-survive) &nbsp;|&nbsp; [What it breaks](#what-it-breaks) &nbsp;|&nbsp; [How it works](#how-it-works) &nbsp;|&nbsp; [Quickstart](#quickstart) &nbsp;|&nbsp; [Any language](#any-language-the-transparent-proxy) &nbsp;|&nbsp; [pytest](#use-it-in-pytest) &nbsp;|&nbsp; [CI gate](#gate-your-pull-requests) &nbsp;|&nbsp; [Roadmap](#roadmap)
 
 </div>
 
@@ -101,16 +101,42 @@ Network faults (jitter, drops, DNS), a transparent proxy for any language, LangG
 
 ## Quickstart
 
+**Requirements:** Python 3.10+. Nothing else — the core is pure Python with zero runtime
+dependencies, so these three commands are the entire setup:
+
 ```bash
 git clone https://github.com/ahmed-dev-chain/agent-chaos.git
 cd agent-chaos
 pip install -e ".[dev]"
+```
 
+```bash
 chaos run examples/support_agent.py:NAIVE       # watch a fragile agent fail
 chaos run examples/support_agent.py:HARDENED    # watch a hardened one pass
 chaos faults                                    # list every available fault
 chaos init                                      # detect your framework, write a starter scenario file
 ```
+
+No API key, no account, no network access needed for any of the above — `examples/support_agent.py`
+is a deterministic stand-in for a real LLM agent. If something doesn't run, check `python --version`
+is 3.10+ (`python3 --version` on macOS/Linux) and that `pip install` reports no errors; the install
+above is the only step that can fail, since every `chaos` subcommand just needs the package on `PATH`.
+
+### Which install do I need?
+
+`pip install -e ".[dev]"` above covers trying the examples, writing your own scenarios, and running
+the test suite — that's enough for almost everyone. A few features need one extra, *in addition to*
+`dev`, only if you're using that specific feature:
+
+| You want to... | Install | Adds |
+| --- | --- | --- |
+| Write scenarios, run the examples, contribute | `pip install -e ".[dev]"` | pytest, ruff, mypy, httpx |
+| Verify interception against real OpenAI/Anthropic SDK calls | `pip install -e ".[real-sdk]"` | openai, anthropic, python-dotenv |
+| Fault-test a non-Python agent via `chaos proxy` (HTTPS) | `pip install -e ".[proxy]"` | cryptography (for the local CA — plain HTTP needs nothing extra) |
+| Build the docs site locally | `pip install -e ".[docs]"` | mkdocs-material |
+
+Nothing above is required just to intercept `httpx`-based model/API calls (OpenAI, Anthropic SDKs,
+etc.) in your own agent — `patch_httpx` only needs `httpx` itself, already pulled in by `dev`.
 
 ### Test your own agent
 

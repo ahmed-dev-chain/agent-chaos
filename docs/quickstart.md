@@ -1,5 +1,7 @@
 # Quickstart
 
+**Requirements:** Python 3.10+. Nothing else — zero runtime dependencies for the core.
+
 ```bash
 git clone https://github.com/ahmed-dev-chain/agent-chaos.git
 cd agent-chaos
@@ -10,6 +12,16 @@ chaos run examples/support_agent.py:HARDENED    # watch a hardened one pass
 chaos faults                                    # list every available fault
 chaos init                                      # detect your framework, write a starter scenario file
 ```
+
+## Which install do I need?
+
+`pip install -e ".[dev]"` covers almost everyone. A few features need one more extra on top:
+
+| You want to... | Install |
+| --- | --- |
+| Verify interception against real OpenAI/Anthropic SDK calls | `pip install -e ".[real-sdk]"` |
+| Fault-test a non-Python agent via `chaos proxy` (HTTPS) | `pip install -e ".[proxy]"` |
+| Build this docs site locally | `pip install -e ".[docs]"` |
 
 ## Test your own agent
 
