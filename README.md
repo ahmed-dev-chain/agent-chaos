@@ -102,7 +102,23 @@ Network faults (jitter, drops, DNS), a transparent proxy for any language, LangG
 ## Quickstart
 
 **Requirements:** Python 3.10+. Nothing else — the core is pure Python with zero runtime
-dependencies, so these three commands are the entire setup:
+dependencies.
+
+**Just want the `chaos` command?** Install it as a standalone CLI tool, system-wide, with
+[pipx](https://pipx.pypa.io) (recommended — keeps it in its own isolated environment) or plain pip:
+
+```bash
+pipx install agent-chaos-toolkit      # recommended: isolated, no venv to manage
+# or: pip install agent-chaos-toolkit
+
+chaos --version
+chaos init                            # detect your framework, write a starter scenario file
+```
+
+The PyPI package is called `agent-chaos-toolkit` (the name `agent-chaos` was already taken), but
+the command is still `chaos` and the Python package is still `import agent_chaos` either way.
+
+**Working on agent-chaos itself, or want the bundled examples?** Clone it instead:
 
 ```bash
 git clone https://github.com/ahmed-dev-chain/agent-chaos.git
@@ -119,24 +135,26 @@ chaos init                                      # detect your framework, write a
 
 No API key, no account, no network access needed for any of the above — `examples/support_agent.py`
 is a deterministic stand-in for a real LLM agent. If something doesn't run, check `python --version`
-is 3.10+ (`python3 --version` on macOS/Linux) and that `pip install` reports no errors; the install
-above is the only step that can fail, since every `chaos` subcommand just needs the package on `PATH`.
+is 3.10+ (`python3 --version` on macOS/Linux) and that the install command reported no errors; that's
+the only step that can fail, since every `chaos` subcommand just needs the package on `PATH`.
 
 ### Which install do I need?
 
-`pip install -e ".[dev]"` above covers trying the examples, writing your own scenarios, and running
-the test suite — that's enough for almost everyone. A few features need one extra, *in addition to*
-`dev`, only if you're using that specific feature:
+The CLI install (`pipx`/`pip install agent-chaos-toolkit`) or `pip install -e ".[dev]"` from a clone
+both cover trying the examples, writing your own scenarios, and running the test suite — that's
+enough for almost everyone. A few features need one extra on top, only if you're using that specific
+feature:
 
 | You want to... | Install | Adds |
 | --- | --- | --- |
-| Write scenarios, run the examples, contribute | `pip install -e ".[dev]"` | pytest, ruff, mypy, httpx |
-| Verify interception against real OpenAI/Anthropic SDK calls | `pip install -e ".[real-sdk]"` | openai, anthropic, python-dotenv |
-| Fault-test a non-Python agent via `chaos proxy` (HTTPS) | `pip install -e ".[proxy]"` | cryptography (for the local CA — plain HTTP needs nothing extra) |
-| Build the docs site locally | `pip install -e ".[docs]"` | mkdocs-material |
+| Just the `chaos` CLI, system-wide | `pipx install agent-chaos-toolkit` | nothing extra — zero runtime deps |
+| Write scenarios, run the examples, contribute | clone + `pip install -e ".[dev]"` | pytest, ruff, mypy, httpx |
+| Verify interception against real OpenAI/Anthropic SDK calls | add `pip install -e ".[real-sdk]"` | openai, anthropic, python-dotenv |
+| Fault-test a non-Python agent via `chaos proxy` (HTTPS) | add `pip install -e ".[proxy]"` | cryptography (for the local CA — plain HTTP needs nothing extra) |
+| Build the docs site locally | add `pip install -e ".[docs]"` | mkdocs-material |
 
 Nothing above is required just to intercept `httpx`-based model/API calls (OpenAI, Anthropic SDKs,
-etc.) in your own agent — `patch_httpx` only needs `httpx` itself, already pulled in by `dev`.
+etc.) in your own agent — `patch_httpx` only needs `httpx` itself.
 
 ### Test your own agent
 

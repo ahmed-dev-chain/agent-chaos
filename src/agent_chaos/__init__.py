@@ -17,7 +17,7 @@ from .record import ReplayFault, load_replay, save_trace
 from .runner import RunSummary, Scenario, ScenarioResult, TrialResult, run_all, run_scenario, run_trial
 from .shrink import shrink
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "faults", "oracles", "policies", "ChaosError", "Event", "Kind", "Level", "RunContext",
