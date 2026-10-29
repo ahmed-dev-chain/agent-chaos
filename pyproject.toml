@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agent-chaos-toolkit"
-version = "0.2.0"
+version = "0.2.1"
 description = "Chaos engineering for AI agents: break tools, models and context on purpose, then measure whether your agent survives."
 readme = "README.md"
 requires-python = ">=3.10"

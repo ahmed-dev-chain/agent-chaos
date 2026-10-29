@@ -1,17 +1,17 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="agent-chaos: chaos engineering for AI agents" width="100%">
+<img src="https://raw.githubusercontent.com/ahmed-dev-chain/agent-chaos/master/assets/banner.svg" alt="agent-chaos: chaos engineering for AI agents" width="100%">
 
 <br>
 
 [![CI](https://github.com/ahmed-dev-chain/agent-chaos/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmed-dev-chain/agent-chaos/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-2DD4BF)](LICENSE)
-[![Status](https://img.shields.io/badge/status-alpha-FF6B3D)](docs/ROADMAP.md)
-[![Dependencies](https://img.shields.io/badge/runtime%20dependencies-0-3DDC97)](pyproject.toml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-2DD4BF)](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/LICENSE)
+[![Status](https://img.shields.io/badge/status-alpha-FF6B3D)](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/docs/ROADMAP.md)
+[![Dependencies](https://img.shields.io/badge/runtime%20dependencies-0-3DDC97)](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/pyproject.toml)
 [![pytest plugin](https://img.shields.io/badge/pytest-plugin-0A9EDC?logo=pytest&logoColor=white)](#use-it-in-pytest)
 [![Lint](https://img.shields.io/badge/lint-ruff-261230?logo=ruff&logoColor=D7FF64)](https://docs.astral.sh/ruff/)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-8A94AD)](CONTRIBUTING.md)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-8A94AD)](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/CONTRIBUTING.md)
 
 **Your agent works in the demo. Does it work when everything breaks?**
 
@@ -38,9 +38,9 @@ Netflix's Chaos Monkey did this for servers. Almost nobody does it for agents, a
 
 Two support agents, same five fault scenarios, 100 trials. The fragile one trusts tool output, retries blindly and obeys instructions hidden in data. The hardened one validates schemas, uses idempotency keys and treats data as data. No API key required: `pip install -e . && chaos run examples/support_agent.py:NAIVE`.
 
-<p align="center"><img src="assets/terminal-naive.svg" alt="agent-chaos run on a fragile agent: score 33, 40 unsafe outcomes, gate failed" width="860"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/ahmed-dev-chain/agent-chaos/master/assets/terminal-naive.svg" alt="agent-chaos run on a fragile agent: score 33, 40 unsafe outcomes, gate failed" width="860"></p>
 
-<p align="center"><img src="assets/terminal-hardened.svg" alt="agent-chaos run on a hardened agent: score 100, gate passed" width="860"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/ahmed-dev-chain/agent-chaos/master/assets/terminal-hardened.svg" alt="agent-chaos run on a hardened agent: score 100, gate passed" width="860"></p>
 
 Every failure ends with a one-line reproduction. This is what `chaos replay` shows for the prompt-injection case, step by step, including the fault that fired (note how the injected text even leaked into the email address):
 
@@ -91,7 +91,7 @@ Network faults (jitter, drops, DNS), a transparent proxy for any language, LangG
 
 ## How it works
 
-<p align="center"><img src="assets/architecture.svg" alt="agent-chaos architecture: interfaces, orchestration, engines, interception, system under test" width="760"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/ahmed-dev-chain/agent-chaos/master/assets/architecture.svg" alt="agent-chaos architecture: interfaces, orchestration, engines, interception, system under test" width="760"></p>
 
 1. A **scenario** pairs a task with faults and oracles.
 2. The **runner** expands it into seeded trials. Every random choice comes from one RNG per trial, so a seed reproduces a failure exactly.
@@ -199,7 +199,7 @@ with patch_httpx(ctx):
 
 Agents can be async end to end: `ctx.awrap(...)` wraps async tools, and `chaos run`/`run_scenario` await an
 async target automatically. To confirm the patch genuinely intercepts the real OpenAI/Anthropic SDKs (not
-just a mock), copy [`.env.example`](.env.example) to `.env`, add a key, `pip install -e ".[real-sdk]"`, and
+just a mock), copy [`.env.example`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/.env.example) to `.env`, add a key, `pip install -e ".[real-sdk]"`, and
 run `python examples/real_sdk_check.py`. No key, no `.env` file: nothing in the core test suite needs either.
 
 ### Calling Claude: API key or just your Claude Code subscription
@@ -349,15 +349,15 @@ above and the automatic `GITHUB_TOKEN` -- no secret of yours required.
 - [x] Transparent proxy for any language (`chaos proxy`, allow-listed HTTPS MITM), verified against real internet traffic
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 
-Details in [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf). [`PROGRESS.md`](PROGRESS.md) tracks what's done and what's next session to session.
+Details in [`docs/ROADMAP.md`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/agent-chaos-blueprint.pdf). [`PROGRESS.md`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/PROGRESS.md) tracks what's done and what's next session to session.
 
 ## Contributing
 
-New faults are the easiest way in: subclass `Fault`, implement `apply`, register it, add a test. See [`CONTRIBUTING.md`](CONTRIBUTING.md). Found an agent that breaks in an interesting way? Open an issue with the scenario and the seed.
+New faults are the easiest way in: subclass `Fault`, implement `apply`, register it, add a test. See [`CONTRIBUTING.md`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/CONTRIBUTING.md). Found an agent that breaks in an interesting way? Open an issue with the scenario and the seed.
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/ahmed-dev-chain/agent-chaos/blob/master/LICENSE).
 
 <div align="center">
 
