@@ -12,3 +12,4 @@ chaos-report/
 site/
 .env
 .DS_Store
+.claude/
