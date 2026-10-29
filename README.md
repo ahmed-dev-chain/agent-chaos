@@ -331,7 +331,7 @@ above and the automatic `GITHUB_TOKEN` -- no secret of yours required.
 - [x] Transparent proxy for any language (`chaos proxy`, allow-listed HTTPS MITM), verified against real internet traffic
 - [ ] Adaptive adversary that searches for the cheapest way to break your agent
 
-Details in [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf).
+Details in [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/STABILITY.md`](docs/STABILITY.md). The long-form design is in [`agent-chaos-blueprint.pdf`](agent-chaos-blueprint.pdf). [`PROGRESS.md`](PROGRESS.md) tracks what's done and what's next session to session.
 
 ## Contributing
 
