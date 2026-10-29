@@ -95,16 +95,3 @@ def test_post_is_recorded_as_side_effect(local_server):
         resp = _open(p.url, local_server + "/b", method="POST")
         assert resp.status == 200
     assert ctx.events[0].side_effect is True
-
-
-def test_connect_without_mitm_support_returns_not_implemented(local_server):
-    """Phase 2 only: CONNECT (HTTPS) isn't handled yet without intercept.proxy_connect."""
-    import socket
-
-    ctx = RunContext(0, [])
-    with run_proxy(ctx, []) as p:
-        host, port = p.url.replace("http://", "").split(":")
-        with socket.create_connection((host, int(port)), timeout=5) as sock:
-            sock.sendall(b"CONNECT example.com:443 HTTP/1.1\r\n\r\n")
-            resp = sock.recv(200)
-    assert b"501" in resp

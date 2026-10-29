@@ -9,6 +9,7 @@ later phase, for the HTTPS/CONNECT side); this module handles plain HTTP. stdlib
 from __future__ import annotations
 
 import asyncio
+import ssl
 import threading
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -104,8 +105,12 @@ async def _read_chunked(reader: asyncio.StreamReader, prefetched: bytes) -> byte
         buf = buf[size + 2:]
 
 
-async def _fetch(host: str, port: int, method: str, target: str, headers: dict[str, str], body: bytes) -> ProxyResponse:
-    reader, writer = await asyncio.open_connection(host, port)
+async def _fetch(host: str, port: int, method: str, target: str, headers: dict[str, str], body: bytes,
+                  *, use_tls: bool = False) -> ProxyResponse:
+    if use_tls:
+        reader, writer = await asyncio.open_connection(host, port, ssl=ssl.create_default_context())
+    else:
+        reader, writer = await asyncio.open_connection(host, port)
     try:
         out_headers = dict(headers)
         out_headers["host"] = host if port in (80, 443) else f"{host}:{port}"
@@ -140,22 +145,19 @@ def _serialize_response(resp: ProxyResponse) -> bytes:
     return head.encode("latin-1") + resp.content
 
 
-async def _handle_plain_http(ctx: RunContext, start_line: str, headers: dict[str, str], body: bytes,
-                              writer: asyncio.StreamWriter) -> None:
-    method, target, _ = start_line.split(" ", 2)
-    parts = urlsplit(target)
-    host = parts.hostname or headers.get("host", "").split(":")[0]
-    port = parts.port or 80
-    path = parts.path or "/"
-    if parts.query:
-        path += f"?{parts.query}"
+async def proxy_one_request(ctx: RunContext, host: str, port: int, use_tls: bool, method: str, path: str,
+                             url: str, headers: dict[str, str], body: bytes, writer: asyncio.StreamWriter) -> None:
+    """Run one already-parsed request through the fault engine and write the response back.
 
+    Shared by plain HTTP (absolute-URI, this module) and decrypted post-CONNECT HTTPS
+    (origin-form, ``proxy_connect.py``) -- same event, same fault application either way.
+    """
     name = f"{method} {host}"
     try:
         resp = await ctx.acall(
             Kind.HTTP, name,
-            lambda: _fetch(host, port, method, path, headers, body),
-            args={"url": target},
+            lambda: _fetch(host, port, method, path, headers, body, use_tls=use_tls),
+            args={"url": url},
             side_effect=method not in _SAFE_METHODS,
             idempotency_key=headers.get("idempotency-key"),
         )
@@ -165,6 +167,18 @@ async def _handle_plain_http(ctx: RunContext, start_line: str, headers: dict[str
     except ToolTimeout:
         pass  # close without responding: the client sees it as a timed-out/dropped connection
     await writer.drain()
+
+
+async def _handle_plain_http(ctx: RunContext, start_line: str, headers: dict[str, str], body: bytes,
+                              writer: asyncio.StreamWriter) -> None:
+    method, target, _ = start_line.split(" ", 2)
+    parts = urlsplit(target)
+    host = parts.hostname or headers.get("host", "").split(":")[0]
+    port = parts.port or 80
+    path = parts.path or "/"
+    if parts.query:
+        path += f"?{parts.query}"
+    await proxy_one_request(ctx, host, port, False, method, path, target, headers, body, writer)
 
 
 async def _connection_handler(ctx: RunContext, allow_hosts: Sequence[str],
